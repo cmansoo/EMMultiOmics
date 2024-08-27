@@ -1,6 +1,6 @@
 Package: EMMultiOmics
 Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Version: 1.0
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -14,3 +14,4 @@ Depends:
     R (>= 2.10)
 Imports:
     glmnet (>= 4.1-8)
+LazyData: true

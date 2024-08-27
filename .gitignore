@@ -4,12 +4,4 @@
 .Ruserdata
 *.pdf
 questions.txt
-ignore_dev/CopyOf functions_final.R
-ignore_dev/CopyOf main.R
-ignore_dev/extract_data - Copy.R
-ignore_dev/extract_data.R
-ignore_dev/functions_final.R
-ignore_dev/functions_mc.R
-ignore_dev/hello.R
-ignore_dev/main_08252024.R
-ignore_dev/main.R
+ignore_dev/

@@ -1,11 +1,34 @@
-# EMVS function
-# what does it return? what is the result? (read Haos paper), it seems like variable selection method?
-# M <- what is this matrix for? data matrix? Methylation matrix
-# G <- what is this G?
-# grouping <- ?
-# nu0? nu1? nu? lambda? a? b?
-# can "I" be a parameter too?
-# why does he use foreach %do%? no parallel backend?
+#' Expectation Maximization Variable Selection Function
+#' 
+#' Performs EMVS algorithm for genomics data.
+#' 
+#' `EMVS_par()` uses parallel backend for computation.
+#' 
+#' @param M DNA Methylation matrix
+#' @param G Gene expression level
+#' @param grouping Gene grouping
+#' @param nu0 ...
+#' @param nu1 ...
+#' @param lambda ...
+#' @param a ...
+#' @param b ...
+#' @param I number of iterations...
+#' @param THRESH threshold for ...
+#' 
+#' @examples
+#' 
+#' # example data
+#' G <- GBM_data2$G
+#' C <- GBM_data2$C
+#' Y <- log(GBM_data2$Y)
+#' M <- GBM_data2$M
+#' DELTA <- GBM_data2$Delta
+#' grouping <- GENE_GROUP2
+#' 
+#' EMVS(M, G, grouping, I=10, THRESH=0.001)
+#' EMVS_par(M, G, grouping, I=10, THRESH=0.001)
+#' 
+#' @export
 EMVS <- function(M,G,grouping,nu0=0.5,nu1=10^3, nu=1, lambda=1, a=1, b=1, I=100,
                  THRESH=0.0001){
   #get dimension of data

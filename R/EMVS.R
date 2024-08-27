@@ -120,10 +120,6 @@ EMVS <- function(M,G,grouping,nu0=0.5,nu1=10^3, nu=1, lambda=1, a=1, b=1, I=100,
   
 }
 
-# test
-EMVS(M, G, grouping, I=2, THRESH=0.1)
-
-
 
 
 
@@ -255,10 +251,6 @@ EMVS_par <- function(M,G,grouping,nu0=0.5,nu1=10^3, nu=1, lambda=1, a=1, b=1, I=
   # return
   result
 }
-
-
-EMVS_par(M, G, grouping, I=2, THRESH=0.1)
-
 
 
 

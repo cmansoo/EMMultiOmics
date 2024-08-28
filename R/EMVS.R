@@ -171,7 +171,7 @@ EMVS_par <- function(M,G,grouping,nu0=0.5,nu1=10^3, nu=1, lambda=1, a=1, b=1, I=
   n_cores <- parallel::detectCores() - 1
   cl <- parallel::makeCluster(n_cores)
   # `%dopar%` <- foreach::`%dopar%`
-  parallel::clusterExport(cl, varlist=c(
+  parallel::clusterExport(cl, envir=environment(), varlist=c(
     "M", "G", "grouping",
     "N", "J", "K", "R", "Kr",
     "estalpha", "esttau2", "estOme", "estsig2", "esttheta", "iteration",

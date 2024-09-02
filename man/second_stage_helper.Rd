@@ -59,7 +59,7 @@ gstr <- "scale"
 n_fold <- 10
 random_seed <- 123
 
-second_stage_helper(G, Y, C, Delta, R2, a0, gstr, n_fold, random_seed,
+second_stage_helper(Y, G, C, Delta, R2, a0, gstr, n_fold, random_seed,
                     I=10, thresh=0.001)
 
 # multiple a0

@@ -25,34 +25,29 @@ EMVS(
 
 \item{grouping}{Gene grouping}
 
-\item{nu0}{...}
+\item{nu0}{parameter 0 for spike-and-slab Gaussian mixture prior on \eqn{\beta}}
 
-\item{nu1}{...}
+\item{nu1}{parameter 1 for spike-and-slab Gaussian mixture prior on \eqn{\beta}}
 
-\item{lambda}{...}
+\item{lambda}{For the prior on \eqn{\sigma2}, an inverse gamma prior \eqn{\pi(\sigma2 | \gamma) = IG(\nu/2, \nu\lambda/2)}, <- what is lambda here?}
 
-\item{a}{...}
+\item{a}{Parameter \eqn{a} for the beta prior \eqn{\pi(\theta) \propto \theta a-1(1-\theta)b-1}, \eqn{a, b > 0}}
 
-\item{b}{...}
+\item{b}{Parameter \eqn{b} for the beta prior \eqn{\pi(\theta) \propto \theta a-1(1-\theta)b-1}, \eqn{a, b > 0}}
 
-\item{I}{number of iterations...}
+\item{I}{Maximum number of iterations of EMVS}
 
-\item{THRESH}{threshold for ...}
+\item{THRESH}{Threshold for change of parameters. The threshold will determine convergence.}
 }
 \description{
 Performs EMVS algorithm for genomics data.
-}
-\details{
-\code{EMVS_par()} uses parallel backend for computation.
+The default values for \code{nu0}, \code{nu1}, \code{lambda}, \code{a}, \code{b} were chosen per publication: \emph{Veronika Ročková & Edward I. George (2013): EMVS: The EM Approach to Bayesian Variable Selection, Journal of the American Statistical Association}
 }
 \examples{
 
 # example data
-G <- GBM_data2$G
-C <- GBM_data2$C
-Y <- log(GBM_data2$Y)
 M <- GBM_data2$M
-DELTA <- GBM_data2$Delta
+G <- GBM_data2$G
 grouping <- GENE_GROUP2
 
 EMVS(M, G, grouping, I=10, THRESH=0.001)

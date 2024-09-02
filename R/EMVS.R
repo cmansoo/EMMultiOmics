@@ -22,7 +22,7 @@
 #' grouping <- GENE_GROUP2
 #' 
 #' EMVS(M, G, grouping, I=10, thresh=0.001)
-#' EMVS_par(M, G, grouping, I=10, thresh=0.001)
+#' # EMVS_par(M, G, grouping, I=10, thresh=0.001)
 #' 
 #' @export
 EMVS <- function(M, G, grouping, nu0=0.5, nu1=10^3, nu=1, lambda=1, a=1, b=1, I=100,

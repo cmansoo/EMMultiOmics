@@ -381,9 +381,9 @@ load("data/GBM2_EMVS_res.rda")
 
 
 # construct Z matrix
-# K is from K=ncol(G), G has to be parameterized then?
+# K is from K=ncol(G), G has to be parameterized then?, user param
 K <- ncol(GBM_data2$G)
-# R2 is from EMVS result
+# R2 is from EMVS result, user parameter
 R2 <- GBM2_EMVS_res$R2
 
 Zmatrix <- cbind(matrix(1,nrow=K,ncol=1), matrix(0,nrow=K,ncol=3))
@@ -400,12 +400,40 @@ for(ww in 1:K){
 n_fold <- 10 # user parameter
 set.seed(123) # user parameter
 # N is from nrow(G)
-N <- nrow(GBM_data2$G)
+N <- nrow(GBM_data2$G) # user param should be G
 folds <- caret::createFolds(1:N, k=n_fold)
 final_list <- list() # to store result
+Delta <- GBM_data2$Delta # user parameter
+
+# at the first loop Hao only used a0 = 0.1 but later he used c(0.1, 1, 10, 50) so this second stage function
+# should be loopable with diff params of a0 and gstr
+a0 <- 0.1 # user param
+gstr <- 1/N^2 # user param <- from the txt files Hao created gstr values he used were c(1, 4.162331e-05, "scale") which is the same as c(1, 1/N^2, 1/(N^2)) so scale i just the same as 1/N^2
+# but not sure where to find these from the code he wrote main.R
+Y <- GBM_data2$Y # user param
+G <- GBM_data2$G # user param
+C <- GBM_data2$C # user param
+
+for(jjj in 1:n_fold){
+  test_indx <- folds[[jjj]]
+  train_delta <- Delta[-test_indx]
+  test_delta <- Delta[test_indx]
+  lst <- NEG_em(Y=Y[-test_indx],
+                G=as.matrix(G[-test_indx,]),
+                C=as.matrix(C[-test_indx,]),
+                a0=a0,
+                gstr=gstr,
+                Zmatrix=Zmatrix,
+                I=10,
+                thresh=0.001,
+                .mpmath=.mpmath)
+  # save result
+  final_list[[jjj]] <- lst
+}
 
 
-##### PICK UP FROM HERE <- set things up correctly and test if NEG_em works that I created
+
+##### PICK UP FROM HERE <- Built 2nd stage helepr, now need to create the result data frames and graphs
 
 
 

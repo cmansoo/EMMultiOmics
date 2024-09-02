@@ -15,7 +15,7 @@ EMVS(
   a = 1,
   b = 1,
   I = 100,
-  THRESH = 1e-04
+  thresh = 1e-04
 )
 }
 \arguments{
@@ -37,7 +37,7 @@ EMVS(
 
 \item{I}{Maximum number of iterations of EMVS}
 
-\item{THRESH}{Threshold for change of parameters. The threshold will determine convergence.}
+\item{thresh}{Threshold for convergence criterion.}
 }
 \description{
 Performs EMVS algorithm for genomics data.
@@ -50,7 +50,7 @@ M <- GBM_data2$M
 G <- GBM_data2$G
 grouping <- GENE_GROUP2
 
-EMVS(M, G, grouping, I=10, THRESH=0.001)
-EMVS_par(M, G, grouping, I=10, THRESH=0.001)
+EMVS(M, G, grouping, I=10, thresh=0.001)
+# EMVS_par(M, G, grouping, I=10, thresh=0.001)
 
 }

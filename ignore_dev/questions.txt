@@ -1,0 +1,90 @@
+1. can "I" be a parameter in NEG_em and EMVS? Can we also parameterize the threshold value? 0.00001 in the if(sum(...)... < 0.0001)
+2. in EMVS why use foreach? were you trying to parallelize?
+3. what could be done to speed up the process?
+4. what is mechanistic_mod, clinic mode? They seem to be used with specific example data (and NEG functions?)
+5. commandArgs <- what areguments were you copying? can I assume that default (length 0 or NULL for command args) is the following?
+
+if (length(args)==0){
+  source('functions.R')
+  mechanistic_mod = 'quadratic'
+  clinic_mod = 'em'
+  # parameters for clinic model
+  local = T
+  dirr = getwd()
+  
+  
+6. so for now is it safe to ignore mechanitic modes other than quadratic? also GBM data 3 and GBM data1? also NEG mcmc and NEG censor?
+7. do we need file outputs? or want to output in R console?
+8. regarding NEG function - it seems to be that the function is dependent on output files "zv....txt" and the python code lpcf.py which has also dependencies on python packages such as pandas mpmath..  Is there a way to get rid of this dependency? Should I store the output as an R object? is 
+
+I think the goal was to use pythons mpmath.pcfd() which is not available in R?
+Find out if there is a way to import this into R
+
+
+
+### General
+# what does EMVS return? what is the result? (read Haos paper), it seems like variable selection method?
+# M <- what is this matrix for? data matrix? Methylation matrix
+# G <- what is this G?
+# grouping <- ?
+# nu0? nu1? nu? lambda? a? b?
+# can "I" be a parameter too?
+# why does he use foreach %do%? no parallel backend?
+
+
+functional_classification.txt seems to be used for the grouping function. look at extract_data.R the function get_grouping()
+
+
+
+
+EMVS documentation <- ask Sounak if he could provide more information for the "details" i.e. how the function works, description of each parameter in laymen terms
+
+gene_grouping should be obtainable automatically from DAVID database. Hao will hopefully get back
+
+
+
+
+
+
+
+
+
+
+
+What exactly is 2nd stage modeling doing?
+
+
+a values
+gstr values
+why repeat over different values
+why output multiple (save() calls)
+and then combinetogether in a table - why?
+What is the intermediate step for constructing Z matrix?
+What is the cross validation step for?
+
+
+functions_final.R the Q2() function ...
+line 188 sum(-a*log(1/(t(bk)%*%t(Zmatrix)))-Elambdaj2[1:K0]*(t(bk)%*%t(Zmatrix)))+sum((alpha-1)*log(bk)-gam*bk)
+
+sum((alpha-1)*log(bk)-gam*bk) <- the alph here is = 1, and I don't think it ever changed since the assiginment in line 114. What is the point of this? alpha - 1  = 0 times other quantity? is this typo?
+
+
+
+What is a0 and gstr values? -> for a0 values c(0.1,1,10,50)? why did you choose these numbers? what are they?
+gstr = scale and 1/N^2 what is the difference? are they the same?
+It seems like you've been only using 3 values for gstr - 1, 1/N^2 or scale? is this correct?
+
+
+
+within NEG_em, what is this plot for?
+plot(betak[kkk,],main=kkk) 
+And what about the print messages? do we need them?
+
+Also EMVS function had the print messages? what are they for? do we need them as well?
+
+2nd stage helper is very specific use, maybe dont need this? because the user can to cross validation on their own?
+
+
+
+
+

@@ -4,9 +4,9 @@
 #' A short description...
 #' 
 #' 
-#' @param Y details...
-#' @param G details...
-#' @param C details...
+#' @param Y clinical outcome
+#' @param G gene expression level
+#' @param C clinical features
 #' @param a0 details...
 #' @param gstr details... (if "scale", then gstr = 1/N^2, where N=nrow(G)) 
 #' @param Zmatrix details...
@@ -152,7 +152,7 @@ NEG_em <- function(Y, G, C, a0, gstr, Zmatrix, I=10, thresh=0.001, .mpmath=setup
 #' requires reticulate
 #' @export
 setup_mpmath <- function(){
-  if(!reticulate::py_available()) stop("EMMultiOmics::lpcf() requires python 3.x. Please install python.")
+  # if(!reticulate::py_available()) stop("EMMultiOmics::lpcf() requires python 3.x. Please install python.")
   if(!reticulate::virtualenv_exists("emmultiomics")) reticulate::virtualenv_create("emmultiomics", packages=NULL)
   reticulate::use_virtualenv("emmultiomics")
   if(!reticulate::py_module_available("mpmath")) reticulate::virtualenv_install("emmultiomics", packages="mpmath")
@@ -197,7 +197,7 @@ lpcf <- function(k, v, z, .mpmath){
 #' Builds Z matrix to be used with NEG_em
 #' 
 #' @param R2 R-squared from EMVS result
-#' @param G details...
+#' @param G gene expression level
 #' 
 #' @examples
 #' G <- GBM_data2$G
@@ -230,9 +230,9 @@ Zmat_builder <- function(R2, G){
 #' Runs cross validation for 2nd stage modeling.
 #' 
 #' 
-#' @param Y details..
-#' @param G details..
-#' @param C details..
+#' @param Y clinical outcome
+#' @param G gene expression level
+#' @param C clinical features
 #' @param Delta details...
 #' @param R2 vector of R2 (R-squared?) from first EMVS algorithm
 #' @param a0 details... (or this can be under `...`)

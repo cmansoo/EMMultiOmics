@@ -1,6 +1,6 @@
 #' Get Gene Groupings from Functional classification text file
 #' @export
-get_grouping = function(full_gene_list, file_dir){
+get_grouping <- function(full_gene_list, file_dir){
   K0 = length(full_gene_list)
   functionalClassification <- read.delim(file_dir, header=FALSE, comment.char="#") 
   breakPoint = which(startsWith(as.character(functionalClassification[,1]),'Gene Group'))

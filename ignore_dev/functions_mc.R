@@ -433,7 +433,7 @@ for(jjj in 1:n_fold){
 
 
 
-##### PICK UP FROM HERE <- Built 2nd stage helepr, now need to create the result data frames and graphs
+##### Built 2nd stage helepr, now need to create the result data frames and graphs
 # set up
 G <- GBM_data2$G
 Y <- GBM_data2$Y
@@ -458,12 +458,62 @@ result2 <- lapply(a0, function(a) second_stage_helper(Y, G, C, Delta, R2, a0=a, 
 
 
 # save results temporarily and come back for dev
-save(result1, file="ignore_dev/2nd_stage_result1.rda")
-save(result2, file="ignore_dev/2nd_stage_result2.rda")
-##### PICK UP FROM HERE
+# save(result1, file="ignore_dev/2nd_stage_result1.rda")
+# save(result2, file="ignore_dev/2nd_stage_result2.rda")
+##### PICK UP FROM HERE - develop summary functions (tables and plot functions?)
+# load results
+load("ignore_dev/2nd_stage_result1.rda")
+load("ignore_dev/2nd_stage_result2.rda")
+
+result1 # result from 2nd stage helper
+result2 # result from 2nd stage helper with loop over a0
+
+### Hao's code
+# initialize result table
+cols <- c("a", "g", "size_support",
+          "r2_train", "r2_test", "cindex_train", "cindex_test",
+          "mse_train", "mse_test", "AGE", "PRIOR_GLIOMA",
+          "SEX", "PRETREATMENT_HISTORY") # does this need to be parameterized? not sure what hes doing here
+final_table <- data.frame(matrix(0, nrow=8, ncol=length(cols))) # where is the nrow and ncol from?
+colnames(final_table) <- cols
+final_table
+box_tables <- data.frame()
+box_tables
 
 
+# colnames(final_table)[1:2] <- c('a','g')
+final_table
+# colnames(final_table)[3:13] = c('size support',
+#                                 'r2_train',
+#                                 'r2_test',
+#                                 'cindex_train',
+#                                 'cindex_test',
+#                                 'mse_train',
+#                                 'mse_test',
+#                                 'AGE',
+#                                 'PRIOR_GLIOMA',
+#                                 'SEX',
+#                                 'PRETREATMENT_HISTORY')
 
+### read in 10 fold results for comparison
+load("ignore_dev/hao_outputs/10fold_0.1_1_em.RData")
+load("ignore_dev/hao_outputs/10fold_0.1_4.16233090530697e-05_em_censor.RData")
+load("ignore_dev/hao_outputs/10fold_0.1_4.16233090530697e-05_em.RData")
+print(length(final_list))
+
+n_fold <- 10 # borrow from 2nd stage helper or make this user input?
+# or potentially combine the cross validation and summary fx together
+# plotting can be on its own?
+res_cols <- c("size_support", "r2_train", "r2_test", "cindex_train", "cindex_test",
+              "mse_train", "mse_test", 
+              # covariates that should be specific to the dataset? - ask Hao
+              "AGE", "PRIOR_GLIOMA", "SEX", "PRETREATMENT_HISTORY")
+res_table <- data.frame(matrix(0, n_fold, length(res_cols))) |> 
+  setNames(res_cols)
+res_table
+
+
+selecte_biomarkers <- c()
 
 
 # ### EMVS parallel backend?

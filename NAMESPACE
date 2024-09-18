@@ -3,6 +3,7 @@
 export(EMVS)
 export(NEG_em)
 export(Zmat_builder)
+export(get_grouping)
 export(lpcf)
 export(second_stage_helper)
 export(setup_mpmath)

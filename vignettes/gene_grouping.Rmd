@@ -40,7 +40,8 @@ Then we specify the List Type and submit. The Tool will return the classificatio
 ## Step 4. Get Grouping
 Once the classification file is downloaded as txt, use `get_grouping()` function to obtain the gene grouping.
 ```{r, eval=FALSE}
-gene_grouping <- get_grouping(eg_gene_symbols, file_dir="../inst/eg_fx_classification.txt")
+fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
+gene_grouping <- get_grouping(eg_gene_symbols, fp)
 ```
 
 

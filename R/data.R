@@ -14,7 +14,7 @@
 #' @format Full data for GBM 2
 "GBM_data2_full"
 
-#' "GENE_GROUP2_FULL"
+#' GENE_GROUP2_FULL
 #' @format Gene grouping for GBM full data 2
 "GENE_GROUP2_FULL"
 
@@ -22,3 +22,6 @@
 #' @format GBM 2 full data EMVS result
 "GBM2_full_EMVS_res"
 
+#' Example Gene Names
+#' @format Example Gene ID's from Official Symbols
+"eg_gene_symbols"

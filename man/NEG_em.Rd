@@ -17,11 +17,11 @@ NEG_em(
 )
 }
 \arguments{
-\item{Y}{details...}
+\item{Y}{clinical outcome}
 
-\item{G}{details...}
+\item{G}{gene expression level}
 
-\item{C}{details...}
+\item{C}{clinical features}
 
 \item{a0}{details...}
 

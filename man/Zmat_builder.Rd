@@ -9,7 +9,7 @@ Zmat_builder(R2, G)
 \arguments{
 \item{R2}{R-squared from EMVS result}
 
-\item{G}{details...}
+\item{G}{gene expression level}
 }
 \description{
 Builds Z matrix to be used with NEG_em

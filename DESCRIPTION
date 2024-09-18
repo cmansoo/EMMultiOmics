@@ -16,5 +16,8 @@ Imports:
     glmnet (>= 4.1-8), caret(>= 6.0-94)
 LazyData: true
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+VignetteBuilder: knitr

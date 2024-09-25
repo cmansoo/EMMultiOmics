@@ -227,7 +227,7 @@ Zmat_builder <- function(R2, G){
 #' 2nd stage modeling helper
 #' 
 #' @description
-#' Runs cross validation for 2nd stage modeling.
+#' Runs cross validation for 2nd stage modeling; outputs summary
 #' 
 #' 
 #' @param Y clinical outcome
@@ -257,17 +257,19 @@ Zmat_builder <- function(R2, G){
 #' n_fold <- 10
 #' random_seed <- 123
 #' 
-#' second_stage_helper(Y, G, C, Delta, R2, a0, gstr, n_fold, random_seed,
-#'                     I=10, thresh=0.001)
+#' cv_helper(Y, G, C, Delta, R2, a0, gstr, n_fold, random_seed,
+#'           I=10, thresh=0.001)
 #' 
 #' # multiple a0
 #' a0 <- c(0.1, 1, 10, 50)
-#' lapply(a0, function(a) second_stage_helper(Y, G, C, Delta, R2, a0=a, gstr, n_fold, random_seed, 
-#'                                            I=10, thresh=0.001)) |> 
+#' lapply(a0, function(a) cv_helper(Y, G, C, Delta, R2, a0=a, gstr, n_fold, random_seed, 
+#'                                  I=10, thresh=0.001)) |> 
 #'   setNames(a0)
 #' 
 #' @export
-second_stage_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_seed=NULL, ...){
+cv_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_seed=NULL, ...){
+  ###### make this function into a summarizer next, but for now combine the summary and NEG em result,
+  ###### NEG em result and summary function should really be separate in the end tho
   # check if the user has set up mpmath? or NEG_em is going to simply call this object by default?
   .mpmath <- setup_mpmath()
   
@@ -279,7 +281,7 @@ second_stage_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_
   if(is.null(random_seed)) set.seed(random_seed)
   
   folds <- caret::createFolds(1:N, k=n_fold)
-  final_list <- list() 
+  NEG_list <- list() 
   
   # at the first loop Hao only used a0 = 0.1 but later he used c(0.1, 1, 10, 50) so this second stage function
   # should be loopable with diff params of a0 and gstr
@@ -305,7 +307,7 @@ second_stage_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_
                   ...,
                   .mpmath=.mpmath)
     # save result
-    final_list[[jjj]] <- lst
+    NEG_list[[jjj]] <- lst
     
     # track progress
     setTxtProgressBar(pb, jjj)
@@ -318,8 +320,69 @@ second_stage_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_
     message(msg_str)
   }
   
+  # NEG list saved now
   # return
-  final_list
+  # NEG_list
+  
+  # now create the summary
+  # initialize result table
+  cols <- c("a", "g", "size_support",
+            "r2_train", "r2_test", "cindex_train", "cindex_test",
+            "mse_train", "mse_test", "AGE", "PRIOR_GLIOMA",
+            "SEX", "PRETREATMENT_HISTORY") # does this need to be parameterized? not sure what hes doing here
+  final_table <- data.frame(matrix(0, nrow=8, ncol=length(cols))) # where is the nrow and ncol from?
+  colnames(final_table) <- cols
+  # final_table
+  box_tables <- data.frame()
+  # box_tables
+  
+  ## some looping?
+  # result table
+  ppp <- 1
+  for(.gstr in gstr){
+    for (.a0 in a0){
+      res_cols <- c("size_support", "r2_train", "r2_test", "cindex_train", "cindex_test",
+                    "mse_train", "mse_test", 
+                    # covariates that should be specific to the dataset? - ask Hao
+                    "AGE", "PRIOR_GLIOMA", "SEX", "PRETREATMENT_HISTORY")
+      res_table <- data.frame(matrix(0, n_fold, length(res_cols))) |> 
+        setNames(res_cols)
+      
+      selected_biomarkers <- c()
+      
+      for(jjj in 1:n_fold){
+        test_indx = folds[[jjj]]
+        output = NEG_list1[[jjj]]
+        output$beta = data.frame(output$beta)
+        colnames(output$beta) = colnames(G)
+        estbeta = output$beta[output$k,]
+        selected_biomarkers = unique(c(selected_biomarkers, names(estbeta)[abs(estbeta)> 1e-5]))
+        pred_train = cbind(G[-test_indx,], C[-test_indx,]) %*% as.numeric(estbeta)
+        pred_test = cbind(G[test_indx,], C[test_indx,]) %*% as.numeric(estbeta)
+        res_table[jjj, 'size support'] = sum(abs(estbeta) > 1e-5)
+        res_table[jjj,'r2_train'] = .rsq(pred_train, Y[-test_indx] )
+        res_table[jjj,'r2_test']= .rsq(pred_test,Y[test_indx])
+        res_table[jjj,'cindex_train']= .cindx(pred_train,Y[-test_indx])
+        res_table[jjj,'cindex_test']= .cindx(pred_test,Y[test_indx])
+        res_table[jjj,'mse_train']= mean((pred_train-Y[-test_indx])^2)
+        res_table[jjj,'mse_test']= mean((pred_test-Y[test_indx])^2)
+        res_table[jjj,c("AGE","PRIOR_GLIOMA","SEX","PRETREATMENT_HISTORY")] = estbeta[1, 1001:1004] # 1001:1004 from where?
+      }
+      final_table[ppp,1]=.a0
+      final_table[ppp,2]=ifelse(.gstr==1/(N^2),'scale',.gstr)
+      final_table[ppp,3:13]=round(colMeans(res_table),3) # 3:13 from where?
+      box_table=data.frame(a=.a0,g=ifelse(.gstr==1/(N^2),'scale',.gstr),
+                           AGE=res_table$AGE,
+                           PRIOR_GLIOMA=res_table$PRIOR_GLIOMA,
+                           SEX=res_table$SEX,
+                           PRETREATMENT_HISTORY=res_table$PRETREATMENT_HISTORY)
+      box_tables = rbind(box_tables,box_table)
+      ppp=ppp+1
+    }
+  }
+  box_tables$group = paste0('g=',box_tables$g,',a=',box_tables$a)
+  # return
+  list(final_table=final_table, box_table=box_tables)
 }
 
 # test
@@ -351,6 +414,24 @@ second_stage_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_
 #                                            I=10, thresh=0.001)) |> 
 #   setNames(a0)
 
+#' get rsq, private
+.rsq <- function(x, y) summary(lm(y~x))$r.squared
 
-
+#' get cindx, private
+.cindx <- function(pred,actual){
+  phi = 0
+  phi_pred = 0
+  n_input = length(actual)
+  for (ci in 1:n_input){
+    for (cj in 1:n_input){
+      if (actual[ci]>actual[cj]){
+        phi=phi+1
+        if (pred[ci]>pred[cj]){
+          phi_pred=phi_pred+1
+        }
+      }
+    }
+  }
+  return(phi_pred/phi)
+}
 

@@ -1,0 +1,71 @@
+---
+title: "Introduction to EMMultiOmics Package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{gene_grouping}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE, results=FALSE, message=FALSE}
+library(EMMultiOmics)
+```
+
+## Outline
+
+- Purpose of the package
+- Brief explanation of the algorithms and workflow
+- description of example data used
+- DAVID functional classification tool
+- 1st stage modeling with `EMVS()`
+- 2nd stage modeling with `NEG_em()`
+- summary of the model results and plots
+
+## 1. Purpose
+
+...
+
+## 2. Algorithms
+
+...
+
+## 3. example data
+
+We will be working with GBM data from ... Example gene symbols are stored in `eg_gene_symbols.` To obtain gene grouping, we need to get functional classification of these from DAVID.
+
+
+## 4. David functional classifcation tool
+
+`vignette("gene_grouping")`
+
+Once the classification file is downloaded as txt, use `get_grouping()` function to obtain the gene grouping.
+
+```{r, eval=FALSE}
+fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
+gene_grouping <- get_grouping(eg_gene_symbols, fp)
+gene_grouping
+```
+
+## 5. 1st stage modeling
+
+Example on how to use `EMVS()`
+
+
+## 6. 2nd stage modeling
+
+Example on how to use `NEG_em()`.
+How to get 
+
+
+
+## 7. summary
+
+
+

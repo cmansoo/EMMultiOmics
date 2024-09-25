@@ -292,34 +292,34 @@ cv_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_seed=NULL,
   message("Starting cross validation...")
   pb <- txtProgressBar(min=0, max=n_fold, initial=0, style=3)
   
-  for(jjj in 1:n_fold){
-    test_indx <- folds[[jjj]]
-    train_delta <- Delta[-test_indx]
-    test_delta <- Delta[test_indx]
-    lst <- NEG_em(Y=Y[-test_indx],
-                  G=as.matrix(G[-test_indx,]),
-                  C=as.matrix(C[-test_indx,]),
-                  a0=a0,
-                  gstr=gstr,
-                  Zmatrix=Zmatrix,
-                  # I=10,
-                  # thresh=0.001,
-                  ...,
-                  .mpmath=.mpmath)
-    # save result
-    NEG_list[[jjj]] <- lst
-    
-    # track progress
-    setTxtProgressBar(pb, jjj)
-    if(jjj == 1) order_suffix <- "st"
-    else if(jjj == 2) order_suffix <- "nd"
-    else if(jjj == 3) order_suffix <- "rd"
-    else order_suffix <- "th"
-    msg_str <- paste0("\n", jjj, order_suffix, " fold complete")
-    
-    message(msg_str)
-  }
-  
+  # for(jjj in 1:n_fold){
+  #   test_indx <- folds[[jjj]]
+  #   train_delta <- Delta[-test_indx]
+  #   test_delta <- Delta[test_indx]
+  #   lst <- NEG_em(Y=Y[-test_indx],
+  #                 G=as.matrix(G[-test_indx,]),
+  #                 C=as.matrix(C[-test_indx,]),
+  #                 a0=a0,
+  #                 gstr=gstr,
+  #                 Zmatrix=Zmatrix,
+  #                 # I=10,
+  #                 # thresh=0.001,
+  #                 ...,
+  #                 .mpmath=.mpmath)
+  #   # save result
+  #   NEG_list[[jjj]] <- lst
+  #   
+  #   # track progress
+  #   setTxtProgressBar(pb, jjj)
+  #   if(jjj == 1) order_suffix <- "st"
+  #   else if(jjj == 2) order_suffix <- "nd"
+  #   else if(jjj == 3) order_suffix <- "rd"
+  #   else order_suffix <- "th"
+  #   msg_str <- paste0("\n", jjj, order_suffix, " fold complete")
+  #   
+  #   message(msg_str)
+  # }
+  # 
   # NEG list saved now
   # return
   # NEG_list
@@ -351,8 +351,36 @@ cv_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_seed=NULL,
       selected_biomarkers <- c()
       
       for(jjj in 1:n_fold){
-        test_indx = folds[[jjj]]
-        output = NEG_list1[[jjj]]
+        
+        test_indx <- folds[[jjj]]
+        train_delta <- Delta[-test_indx]
+        test_delta <- Delta[test_indx]
+        lst <- NEG_em(Y=Y[-test_indx],
+                      G=as.matrix(G[-test_indx,]),
+                      C=as.matrix(C[-test_indx,]),
+                      a0=a0,
+                      gstr=gstr,
+                      Zmatrix=Zmatrix,
+                      # I=10,
+                      # thresh=0.001,
+                      ...,
+                      .mpmath=.mpmath)
+        # save result
+        NEG_list[[jjj]] <- lst
+        
+        # track progress
+        setTxtProgressBar(pb, jjj)
+        if(jjj == 1) order_suffix <- "st"
+        else if(jjj == 2) order_suffix <- "nd"
+        else if(jjj == 3) order_suffix <- "rd"
+        else order_suffix <- "th"
+        msg_str <- paste0("\n", jjj, order_suffix, " fold complete")
+        
+        message(msg_str)
+        
+        
+        # test_indx = folds[[jjj]]
+        output = NEG_list[[jjj]]
         output$beta = data.frame(output$beta)
         colnames(output$beta) = colnames(G)
         estbeta = output$beta[output$k,]
@@ -370,7 +398,7 @@ cv_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_seed=NULL,
       }
       final_table[ppp,1]=.a0
       final_table[ppp,2]=ifelse(.gstr==1/(N^2),'scale',.gstr)
-      final_table[ppp,3:13]=round(colMeans(res_table),3) # 3:13 from where?
+      final_table[ppp,3:length(cols)]=round(colMeans(res_table),3) # 3:13 from where?
       box_table=data.frame(a=.a0,g=ifelse(.gstr==1/(N^2),'scale',.gstr),
                            AGE=res_table$AGE,
                            PRIOR_GLIOMA=res_table$PRIOR_GLIOMA,
@@ -385,34 +413,6 @@ cv_helper <- function(Y, G, C, Delta, R2, a0, gstr, n_fold=10, random_seed=NULL,
   list(final_table=final_table, box_table=box_tables)
 }
 
-# test
-# G <- GBM_data2$G
-# Y <- GBM_data2$Y
-# C <- GBM_data2$C
-# Delta <- GBM_data2$Delta
-# R2 <- GBM2_EMVS_res$R2
-# a0 <- 0.1
-# gstr <- "scale"
-# n_fold <- 10
-# random_seed <- 123
-# 
-# second_stage_helper(Y, G, C, Delta, R2, a0, gstr, n_fold, random_seed,
-#                     I=10, thresh=0.001)
-
-
-# test 2
-# G <- GBM_data2$G
-# Y <- GBM_data2$Y
-# C <- GBM_data2$C
-# Delta <- GBM_data2$Delta
-# R2 <- GBM2_EMVS_res$R2
-# a0 <- c(0.1, 1, 10, 50)
-# n_fold <- 10
-# random_seed <- 123
-# 
-# lapply(a0, function(a) second_stage_helper(Y, G, C, Delta, R2, a0=a, gstr, n_fold, random_seed, 
-#                                            I=10, thresh=0.001)) |> 
-#   setNames(a0)
 
 #' get rsq, private
 .rsq <- function(x, y) summary(lm(y~x))$r.squared

@@ -761,16 +761,7 @@ for(gstr in c("scale", 1)){
 }
 
 box_tables$group = paste0('g=',box_tables$g,',a=',box_tables$a)
-library(ggplot2)
-g1=ggplot(data=box_tables[1:50,],aes(x=as.factor(group),y=AGE))+
-  geom_boxplot()+xlab(NULL)+ylab('beta age')+theme(axis.text.x = element_text(angle = 15))
-g2=ggplot(data=box_tables[1:50,],aes(x=as.factor(group),y=PRIOR_GLIOMA))+
-  geom_boxplot()+xlab(NULL)+ylab('beta prior glioma')+theme(axis.text.x = element_text(angle = 15))
-g3=ggplot(data=box_tables[1:50,],aes(x=as.factor(group),y=SEX))+
-  geom_boxplot()+xlab(NULL)+ylab('beta sex')+theme(axis.text.x = element_text(angle = 15))
-g4=ggplot(data=box_tables[1:50,],aes(x=as.factor(group),y=PRETREATMENT_HISTORY))+
-  geom_boxplot()+xlab(NULL)+ylab('beta pretreatment history')+theme(axis.text.x = element_text(angle = 15))
-gridExtra::grid.arrange(g1,g2,g3,g4, ncol = 2)
+
 
 final_table
 
@@ -790,10 +781,58 @@ random_seed <- 123
 
 final_list1 <- cv_helper(Y, G, C, Delta, R2, a0, gstr, n_fold, random_seed,
                        I=10, thresh=0.001)
-# multiple a0
+
+# multiple a0 and gstr
 a0 <- c(0.1, 1, 10, 50)
-final_list2 <- lapply(a0, function(a) cv_helper(Y, G, C, Delta, R2, a0=a, gstr, n_fold, random_seed, 
-                                              I=10, thresh=0.001)) |> 
-  setNames(a0)
+gstr <- c("scale", 1)
+result2 <- lapply(
+  gstr, 
+  function(g) lapply(
+    a0, 
+    function(a) cv_helper(Y, G, C, Delta, R2, a0=a, gstr=g, n_fold, random_seed, I=10, thresh=0.001)
+  ))
+
+# summary plot
+summary_plot(box_tables=final_list2$box_table)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

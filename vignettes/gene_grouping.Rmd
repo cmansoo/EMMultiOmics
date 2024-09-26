@@ -42,6 +42,7 @@ Once the classification file is downloaded as txt, use `get_grouping()` function
 ```{r, eval=FALSE}
 fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
 gene_grouping <- get_grouping(eg_gene_symbols, fp)
+gene_grouping
 ```
 
 

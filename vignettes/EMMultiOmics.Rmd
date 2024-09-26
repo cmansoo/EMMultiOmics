@@ -2,7 +2,7 @@
 title: "Introduction to EMMultiOmics Package"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{gene_grouping}
+  %\VignetteIndexEntry{EMMultiOmics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -23,11 +23,11 @@ NEG_em(
 
 \item{C}{clinical features}
 
-\item{a0}{details...}
+\item{a0}{size sparsity}
 
-\item{gstr}{details... (if "scale", then gstr = 1/N^2, where N=nrow(G))}
+\item{gstr}{prior (if "scale", then gstr = 1/N^2, where N=nrow(G))}
 
-\item{Zmatrix}{details...}
+\item{Zmatrix}{Loading matrix}
 
 \item{I}{number of maximum iterations}
 

@@ -808,27 +808,225 @@ summary_plot(box_tables=final_list2$box_table)
 
 
 
+###### 1. MultiOmics
+# start with EMVS
+# set up fx params
+devtools::load_all()
+# params for EMVS
+M <- GBM_data2$M
+G <- GBM_data2$G
+gene_grouping <- GENE_GROUP2
+### include ... to specify
+# nu0, nu1, nu, lambda, a, b
+# I and thresh, make separate input for EMVS? like EMVS.I, EMVS.thresh
+
+# params for second stage
+G
+
+
+
+# within MultiOmics, run EMVS
+EMVS_result <- EMVS(M,G, grouping=gene_grouping, I=3, thresh=0.001)
+
+### 2nd stage
+# params
+Y <- GBM_data2$Y
+C <- GBM_data2$C
+R2 <- EMVS_result$R2
+Delta <- GBM_data2$Delta
+.mpmath=setup_mpmath()
+
+a0 <- 0.1
+gstr <- 1
+n_fold <- 10
+random_seed <- 123
+
+
+
+# run 2nd stage
+N <- nrow(G)
+K <- ncol(G)
+J <- ncol(M)
+L <- ncol(C)
+
+# build Z matrix
+Zmatrix <- Zmat_builder(R2, G)
+
+# E-M loop step
+# run cross validation
+set.seed(random_seed)
+folds <- caret::createFolds(1:N, k=n_fold)
+# NEG result list
+# NEG_list <- list() 
+
+# initialize result objects
+selected_biomarkers <- c()
+res_cols <- c("n_selected_vars", "r2_train", "r2_test",
+              "cindex_train", "cindex_test", "mse_train", "mse_test",
+              colnames(C))
+
+res_table <- data.frame(matrix(0, n_fold, length(res_cols))) |> 
+  setNames(res_cols)
+
+# loop
+for(jjj in 1:n_fold){
+  test_indx <- folds[[jjj]]
+  train_delta <- Delta[-test_indx]
+  test_delta <- Delta[test_indx]
+  
+  NEG_output <- NEG_em(Y=Y[-test_indx],
+                       G=as.matrix(G[-test_indx,]),
+                       C=as.matrix(C[-test_indx,]),
+                       a0=a0,
+                       gstr=gstr,
+                       Zmatrix=Zmatrix,
+                       I=3, # make it part of ...? # or separate parameter, NEG.I
+                       thresh=0.001, # make it part of ...? # or separate parameter, NEG.thresh
+                       # ...,
+                       .mpmath=.mpmath)
+  
+  # save result
+  NEG_output$beta <- data.frame(NEG_output$beta)
+  colnames(NEG_output$beta) <- c(colnames(G), colnames(C))
+  estbeta <- NEG_output$beta[NEG_output$k, ]
+  selected_biomarkers <- unique(c(selected_biomarkers,
+                                  names(estbeta[abs(estbeta > 1e-5) & !names(estbeta) %in% colnames(C)])))
+  # evaluate cross validation result
+  pred_train <- cbind(G[-test_indx,], C[-test_indx,]) %*% as.numeric(estbeta)
+  pred_test <- cbind(G[test_indx,], C[test_indx,]) %*% as.numeric(estbeta)
+  res_table[jjj, "n_selected_vars"] <- sum(abs(estbeta) > 1e-5 & !names(estbeta) %in% colnames(C))
+  res_table[jjj, "r2_train"] <- .rsq(pred_train, Y[-test_indx])
+  res_table[jjj, "r2_test"] <- .rsq(pred_test, Y[test_indx])
+  res_table[jjj, "cindex_train"] <- .cindx(pred_train, Y[-test_indx])
+  res_table[jjj, "cindex_test"] <- .cindx(pred_test, Y[test_indx])
+  res_table[jjj, "mse_train"] <- mean((pred_train - Y[-test_indx])^2)
+  res_table[jjj, "mse_test"] <- mean((pred_test - Y[test_indx])^2)
+  res_table[jjj, colnames(C)] <- estbeta[colnames(C)]
+  
+}
+
+# take the average
+performance_df <- data.frame(a=a0, g=ifelse(gstr==1/(N^2),'scale',gstr),
+                             as.list(colMeans(res_table)))
+performance_df2 <- performance_df[, ! colnames(performance_df) %in% colnames(C)] |> 
+  t() |> 
+  `colnames<-`("value")
+
+# calculate SE?
+# reference https://stats.stackexchange.com/questions/44838/how-are-the-standard-errors-of-coefficients-calculated-in-a-regression/44841#44841
+c_beta <- estbeta[colnames(C)] |> as.matrix() |> t() |> `colnames<-`("beta")
+sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
+vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
+std_err <- sqrt(diag(vcov_mat))
+lower_95 <- c_beta - 1.96 * std_err
+colnames(lower_95) <- "lower_95"
+upper_95 <- c_beta + 1.96 * std_err
+colnames(upper_95) <- "upper_95"
+
+coef_result <- cbind(c_beta, std_err, lower_95, upper_95)
+
+final_result <- list(
+  performance = performance_df2,
+  coeffs = coef_result
+)
+
+print(final_result)
+
+
+
+# how final_result# how about full design matrix?
+# full_beta <- estbeta[, estbeta != 0] |> as.matrix() |> t()
+# nonzero_estbeta <- estbeta[, estbeta != 0]
+# full_dx_mat <- cbind(G[, colnames(G) %in% names(nonzero_estbeta)], C[, colnames(C) %in% names(nonzero_estbeta)])
+# full_sigma_sq <- sum((Y - full_dx_mat %*% full_beta)^2) / (nrow(full_dx_mat) - ncol(full_dx_mat))
+# full_vcov_mat <- full_sigma_sq * chol2inv(chol(t(full_dx_mat) %*% full_dx_mat))
+# full_std_err <- sqrt(diag(full_vcov_mat))
+
+
+
+
+### not sure if I'm estimating this correctly
+
+
+# take the last output and develop
+# this is happening inside the loop
+# summarize NEG result
+output <- NEG_list[[10]]
+output$beta <- data.frame(output$beta) # nrow of this dataframe = I in NEG_em
+colnames(output$beta) <- c(colnames(G), colnames(C))
+# output$beta is all of the beta estimates
+estbeta <- output$beta[output$k, ] # take the last iterations row as the estimated beta
+
+# selected biomarkers (or the genes)
+names(estbeta)[abs(estbeta) > 1e-5] # this has to be repeated for each a and gstr values
+selected_biomarkers <- unique(c(selected_biomarkers, names(estbeta)[abs(estbeta) > 1e-5]))
+
+# ask this, should we drop the clinical variables? consider only the number of genes in the selected biomarkers?
+selected_biomarkers <- unique(c(selected_biomarkers, 
+                                names(estbeta)[abs(estbeta) > 1e-5 & !names(estbeta) %in% colnames(C)]))
+
+# evaluate cross validation result
+pred_train <- cbind(G[-test_indx,], C[-test_indx,]) %*% as.numeric(estbeta)
+pred_test <- cbind(G[test_indx,], C[test_indx,]) %*% as.numeric(estbeta)
+# number of selected biomarkers is "size support"
+size_support <- sum(abs(estbeta) > 1e-5 & !names(estbeta) %in% colnames(C)) # originally it was just sum(abs(estbeta > 1e-5))
+r2_train <- .rsq(pred_train, Y[-test_indx])
+r2_test <- .rsq(pred_test, Y[test_indx])
+cindex_train <- .cindx(pred_train, Y[-test_indx])
+cindex_test <- .cindx(pred_test, Y[test_indx])
+mse_train <- mean((pred_train - Y[-test_indx])^2)
+mse_test <- mean((pred_test - Y[test_indx])^2)
+clinical_beta <- estbeta[colnames(C)]
+
+
+# after the loop, remove NA
+# selected_biomarkers <- selected_biomarkers[!is.na(selected_biomarkers)]
+.rsq(pred_train, Y[-test_indx])
+lm(Y[-test_indx] ~ pred_train) |> summary()
+lm(Y[test_indx] ~ pred_test) |> summary()
+
+# squared error
+(pred_train - Y[-test_indx])^2
+(pred_test - Y[test_indx])^2
 
 
 
 
 
+#### test
+# params
+M <- GBM_data2$M
+G <- GBM_data2$G
+grouping <- GENE_GROUP2
+Y <- GBM_data2$Y
+C <- GBM_data2$C
+a0 <- 0.1
+gstr <- "scale"
+Delta <- GBM_data2$Delta
+n_fold <- 10
+random_seed <- 123
+EMVS_I <- 3
+NEG_I <- 3
+EMVS_thresh <- 0.0001
+NEG_thresh <- 0.0001
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# run
+multiOmics(
+  M=M,
+  G=G,
+  grouping=grouping,
+  Y=Y,
+  C=C,
+  a0=a0,
+  gstr=gstr,
+  Delta=Delta,
+  n_fold=n_fold,
+  random_seed = random_seed,
+  EMVS_I = EMVS_I,
+  NEG_I=NEG_I,
+  EMVS_thresh = EMVS_thresh,
+  NEG_thresh = NEG_thresh
+  )
 
 
 

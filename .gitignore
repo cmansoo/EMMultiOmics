@@ -2,7 +2,7 @@
 .Rhistory
 *.RData
 .Ruserdata
-# *.pdf
+*.pdf
 # questions.txt
 # ignore_dev/
 inst/doc

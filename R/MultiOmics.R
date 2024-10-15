@@ -1,4 +1,4 @@
-#' MultiOmics
+#' multiOmics
 #' 
 #' Run first and second stage models
 #' @param M DNA Methylation matrix
@@ -27,7 +27,8 @@
 #' # params
 #' M <- GBM_data2$M
 #' G <- GBM_data2$G
-#' grouping <- GENE_GROUP2
+#' fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
+#' gene_grouping <- get_grouping(eg_gene_symbols, fp)
 #' Y <- GBM_data2$Y
 #' C <- GBM_data2$C
 #' a0 <- 0.1
@@ -64,7 +65,7 @@ multiOmics <- function(
   ){
   
   # within MultiOmics, run EMVS
-  EMVS_result <- EMVS(M,G, grouping=gene_grouping, I=3, thresh=0.001)
+  EMVS_result <- EMVS(M,G, grouping=gene_grouping, I=EMVS_I, thresh=EMVS_thresh)
 
   # run 2nd stage
   N <- nrow(G)
@@ -107,9 +108,8 @@ multiOmics <- function(
                          a0=a0,
                          gstr=gstr,
                          Zmatrix=Zmatrix,
-                         I=3, # make it part of ...? # or separate parameter, NEG.I
-                         thresh=0.001, # make it part of ...? # or separate parameter, NEG.thresh
-                         # ...,
+                         I=NEG_I,
+                         thresh=NEG_thresh, 
                          .mpmath=.mpmath)
     
     # save result
@@ -117,7 +117,7 @@ multiOmics <- function(
     colnames(NEG_output$beta) <- c(colnames(G), colnames(C))
     estbeta <- NEG_output$beta[NEG_output$k, ]
     selected_biomarkers <- unique(c(selected_biomarkers,
-                                    names(estbeta[abs(estbeta > 1e-5) & !names(estbeta) %in% colnames(C)])))
+                                    names(estbeta)[abs(estbeta) > 1e-5 & !names(estbeta) %in% colnames(C)]))
     # evaluate cross validation result
     pred_train <- cbind(G[-test_indx,], C[-test_indx,]) %*% as.numeric(estbeta)
     pred_test <- cbind(G[test_indx,], C[test_indx,]) %*% as.numeric(estbeta)
@@ -139,6 +139,16 @@ multiOmics <- function(
     t() |> 
     `colnames<-`("value")
   
+  # assign gene groups from loading matrix
+  Z_df <- data.frame(names(gene_grouping), Zmatrix[,-1]) |> 
+    `colnames<-`(c("gene_names", "M", "M_non_M", "non_M"))
+  
+  selected_Z <- Z_df[Z_df$gene_names %in% selected_biomarkers, ]
+  M_effect <- selected_Z[selected_Z$M == 1, "gene_names"]
+  M_Mc_effect <- selected_Z[selected_Z$M_non_M == 1, "gene_names"]
+  Mc_effect <- selected_Z[selected_Z$non_M == 1, "gene_names"]
+  selected_genes <- list(`M Effect` = M_effect, `M + M^c Effect` = M_Mc_effect, `M^c Effect` = Mc_effect)
+  
   # calculate SE?
   # reference https://stats.stackexchange.com/questions/44838/how-are-the-standard-errors-of-coefficients-calculated-in-a-regression/44841#44841
   c_beta <- estbeta[colnames(C)] |> as.matrix() |> t() |> `colnames<-`("beta")
@@ -154,48 +164,44 @@ multiOmics <- function(
   
   final_result <- list(
     performance = performance_df2,
-    coeffs = coef_result
+    coeffs = coef_result,
+    selected_genes = selected_genes,
+    cv_result = res_table
   )
   
-  print(final_result)
+  print(final_result[c("performance", "coeffs")])
+  print(final_result$selected_genes)
+  
   # return
   final_result
 }
 
 
 
+# 
+
+
 
 
 #' summary graphs
 #' 
-#' @param box_tables result from `MultiOmics`
+#' Summary box plot of multiOmics model result
+#' 
+#' @param multiOmics_mod multiOmics model result
 #' @export
-summary_plot <- function(box_tables){
-  g1 <- ggplot2::ggplot(data=box_tables, ggplot2::aes(x=as.factor(group),y=AGE))+
-    ggplot2::geom_boxplot()+
-    ggplot2::xlab(NULL)+
-    ggplot2::ylab('beta age')+
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 15))
+summary_plot <- function(multiOmics_mod){
+  res_table <- multiOmics_mod$cv_result
+  unwanted_cols <- c("n_selected_vars", "r2_train", "r2_test",
+                     "cindex_train", "cindex_test", "mse_train", "mse_test")
+  res_table[, setdiff(names(res_table), unwanted_cols)] |>
+    utils::stack() |> 
+    setNames(c("beta", "clinical_x")) |> 
+    ggplot2::ggplot(ggplot2::aes(x=beta)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_wrap(~clinical_x, scales = "free_x", ncol=1) +
+    ggplot2::theme(axis.text.y = ggplot2::element_blank(),
+                   axis.ticks.y = ggplot2::element_blank())
   
-  g2 <- ggplot2::ggplot(data=box_tables,ggplot2::aes(x=as.factor(group),y=PRIOR_GLIOMA))+
-    ggplot2::geom_boxplot()+
-    ggplot2::xlab(NULL)+
-    ggplot2::ylab('beta prior glioma')+
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 15))
-  
-  g3 <- ggplot2::ggplot(data=box_tables,ggplot2::aes(x=as.factor(group),y=SEX))+
-    ggplot2::geom_boxplot()+
-    ggplot2::xlab(NULL)+
-    ggplot2::ylab('beta sex')+
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 15))
-  
-  g4 <- ggplot2::ggplot(data=box_tables,ggplot2::aes(x=as.factor(group),y=PRETREATMENT_HISTORY))+
-    ggplot2::geom_boxplot()+
-    ggplot2::xlab(NULL)+
-    ggplot2::ylab('beta pretreatment history')+
-    ggplot2::theme(axis.text.x = element_text(angle = 15))
-  
-  gridExtra::grid.arrange(g1,g2,g3,g4, ncol = 2)
 }
 
 

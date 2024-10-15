@@ -13,7 +13,7 @@ RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.1.0), reticulate(>= 1.38.0)
 Imports:
-    glmnet (>= 4.1-8), caret(>= 6.0-94)
+    glmnet (>= 4.1-8), caret(>= 6.0-94), ggplot2(>= 3.5.0)
 LazyData: true
 Suggests: 
     knitr,

@@ -428,7 +428,7 @@ coef.multiOmics <- function(multiOmics_mod){
 #' 
 #' summary method for multiOmics_sensitivity object
 #' 
-#' @param multiOmics_sensitivity_obj
+#' @param multiOmics_sensitivity_obj multiOmics_sensitivity object
 #' @export
 summary.multiOmics_sensitivity <- function(multiOmics_sensitivity_obj){
   summary_df <- lapply(multiOmics_sensitivity_obj, function(x){
@@ -521,3 +521,11 @@ summary.multiOmics_sensitivity <- function(multiOmics_sensitivity_obj){
 # 
 # 
 # 
+
+# CCt <- C %*% t(C)
+# mat1 <- solve(CCt + diag(x=1, nrow=dim(CCt)[1], ncol=dim(CCt)[2])) |> 
+#   `colnames<-`(NULL) |> 
+#   `rownames<-`(NULL)
+# 
+# sqrt(mat1 |> diag())
+# mat2 <- MASS::ginv(CCt + diag(x=1, nrow=dim(CCt)[1], ncol=dim(CCt)[2]))

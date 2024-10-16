@@ -32,8 +32,13 @@ multiOmics_sensitivity(
 
 \item{a0_vec}{a vector of \code{a} values}
 
-\item{...}{Additional parameters for \code{multiOmics}params
-
+\item{...}{Additional parameters for \code{multiOmics}}
+}
+\description{
+Run \code{multiOmics} for given sets of parameters \code{g} and \code{a}
+}
+\examples{
+# params
 M <- GBM_data2$M
 G <- GBM_data2$G
 fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
@@ -49,27 +54,27 @@ EMVS_thresh <- 0.0001
 NEG_thresh <- 0.0001
 
 a0 <- c(0.1, 1, 10, 50)
-g <- list("scale", 1)run
+g <- list("scale", 1)
 
+
+# run
 multiOmics_s_obj <- multiOmics_sensitivity(
-M=M,
-G=G,
-grouping=grouping,
-Y=Y,
-C=C,
-a0_vec=a0,
-gstr_vec=g,
-Delta=Delta,
-n_fold=n_fold,
-random_seed = random_seed,
-EMVS_I = EMVS_I,
-NEG_I=NEG_I,
-EMVS_thresh = EMVS_thresh,
-NEG_thresh = NEG_thresh
-)summary
+  M=M,
+  G=G,
+  grouping=grouping,
+  Y=Y,
+  C=C,
+  a0_vec=a0,
+  gstr_vec=g,
+  Delta=Delta,
+  n_fold=n_fold,
+  random_seed = random_seed,
+  EMVS_I = EMVS_I,
+  NEG_I=NEG_I,
+  EMVS_thresh = EMVS_thresh,
+  NEG_thresh = NEG_thresh
+)
 
-summary(multiOmics_s_obj)}
-}
-\description{
-Run \code{multiOmics} for given sets of parameters \code{g} and \code{a}
+# summary
+summary(multiOmics_s_obj)
 }

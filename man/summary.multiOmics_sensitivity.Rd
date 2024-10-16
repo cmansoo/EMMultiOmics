@@ -6,6 +6,9 @@
 \usage{
 \method{summary}{multiOmics_sensitivity}(multiOmics_sensitivity_obj)
 }
+\arguments{
+\item{multiOmics_sensitivity_obj}{multiOmics_sensitivity object}
+}
 \description{
 summary method for multiOmics_sensitivity object
 }

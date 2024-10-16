@@ -35,6 +35,9 @@ NEG_em <- function(Y, G, C, a0, gstr, Zmatrix, I=10, thresh=0.001, .mpmath=setup
   # tell the user to install python and mpmath as it is a dependency
   # tell them to run .setup_mpmath() function as well (if the user has to run, then no longer private)
   
+  # validate args
+  if(I <= 2) stop("`I` must be > 2.")
+  
   # setup params
   N <- nrow(G)
   K0 <- ncol(G)

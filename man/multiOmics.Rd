@@ -2,7 +2,7 @@
 % Please edit documentation in R/MultiOmics.R
 \name{multiOmics}
 \alias{multiOmics}
-\title{MultiOmics}
+\title{multiOmics}
 \usage{
 multiOmics(
   M,
@@ -75,7 +75,8 @@ Run first and second stage models
 # params
 M <- GBM_data2$M
 G <- GBM_data2$G
-grouping <- GENE_GROUP2
+fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
+gene_grouping <- get_grouping(eg_gene_symbols, fp)
 Y <- GBM_data2$Y
 C <- GBM_data2$C
 a0 <- 0.1
@@ -89,7 +90,7 @@ EMVS_thresh <- 0.0001
 NEG_thresh <- 0.0001
 
 # run
-multiOmics(
+multiOmics_obj <- multiOmics(
   M=M,
   G=G,
   grouping=grouping,
@@ -105,4 +106,8 @@ multiOmics(
   EMVS_thresh = EMVS_thresh,
   NEG_thresh = NEG_thresh
 )
+
+# plot
+plot(multiOmics_obj)
+
 }

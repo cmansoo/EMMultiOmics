@@ -27,6 +27,9 @@
 #' @export
 EMVS <- function(M, G, grouping, nu0=0.5, nu1=10^3, nu=1, lambda=1, a=1, b=1, I=100,
                  thresh=0.0001){
+  # validate args
+  if(I <= 2) stop("`I` must be > 2.")
+  
   # get dimension of data
   N=nrow(M)
   K=ncol(G)
@@ -45,7 +48,7 @@ EMVS <- function(M, G, grouping, nu0=0.5, nu1=10^3, nu=1, lambda=1, a=1, b=1, I=
   esttheta=numeric(K)
   iteration=numeric(K)
   
-  message("Tracking progress...")
+  message("Running 1st stage modeling with EMVS...")
   pb <- txtProgressBar(min=0, max=R, initial=0, style=3)
   for(r in 1:R){
     #initialize estimation

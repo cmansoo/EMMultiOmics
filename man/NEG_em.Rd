@@ -23,11 +23,11 @@ NEG_em(
 
 \item{C}{clinical features}
 
-\item{a0}{details...}
+\item{a0}{size sparsity}
 
-\item{gstr}{details... (if "scale", then gstr = 1/N^2, where N=nrow(G))}
+\item{gstr}{prior, two options: "scale" or "1"}
 
-\item{Zmatrix}{details...}
+\item{Zmatrix}{Loading matrix}
 
 \item{I}{number of maximum iterations}
 
@@ -37,6 +37,9 @@ NEG_em(
 }
 \description{
 A short description...
+}
+\details{
+\code{gstr} will take two options "scale" or "1." if \code{gstr} == "scale" then g = 1/N^2 where N = number of genes
 }
 \examples{
 G <- GBM_data2$G

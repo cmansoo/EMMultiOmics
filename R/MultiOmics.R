@@ -69,7 +69,7 @@
 multiOmics <- function(
     M, G, grouping, nu0=0.5, nu1=10^3, nu=1, lambda=1, a=1, b=1, EMVS_I=10, EMVS_thresh=0.0001,
     Y, C, Delta, a0, gstr, n_fold=10, random_seed=NULL, NEG_I=10, NEG_thresh=0.0001
-){
+  ){
   
   # within MultiOmics, run EMVS
   EMVS_result <- EMVS(M,G, grouping=gene_grouping, I=EMVS_I, thresh=EMVS_thresh)

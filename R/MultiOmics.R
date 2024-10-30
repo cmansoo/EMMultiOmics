@@ -15,13 +15,16 @@
 #' @param G gene expression level
 #' @param C clinical features
 #' @param a0 size sparsity
-#' @param gstr prior (if "scale", then gstr = 1/N^2, where N=nrow(G)) 
+#' @param gstr prior, two options: "scale" or "1"
 #' @param Zmatrix Loading matrix
 #' @param NEG_I number of maximum iterations for NEG_em
 #' @param NEG_thresh convergence criterion fpr NEG_em
 #' @param .mpmath function depends on mpmath package from python. pointer for mpmath package
 #' @param n_fold number of folds in K-fold cross validation
 #' @param random_seed random seed for splitting folds for cross validation
+#' 
+#' @details
+#' `gstr` will take two options "scale" or "1." if `gstr` == "scale" then g = 1/N^2 where N = number of genes
 #' 
 #' @examples
 #' # params
@@ -96,7 +99,7 @@ multiOmics <- function(
   res_table <- data.frame(matrix(0, n_fold, length(res_cols))) |> 
     setNames(res_cols)
   
-  message("Starting 2nd stage.")
+  message("\n2nd stage modeling with a0 = ", a0, "and g = ", gstr)
   message("Running cross validation...")
   pb <- txtProgressBar(min=0, max=n_fold, initial=0, style=3)
   
@@ -157,15 +160,16 @@ multiOmics <- function(
   # calculate SE?
   # reference https://stats.stackexchange.com/questions/44838/how-are-the-standard-errors-of-coefficients-calculated-in-a-regression/44841#44841
   c_beta <- estbeta[colnames(C)] |> as.matrix() |> t() |> `colnames<-`("beta")
-  sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
-  vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
-  std_err <- sqrt(diag(vcov_mat))
-  lower_95 <- c_beta - 1.96 * std_err
-  colnames(lower_95) <- "lower_95"
-  upper_95 <- c_beta + 1.96 * std_err
-  colnames(upper_95) <- "upper_95"
+  # sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
+  # vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
+  # std_err <- sqrt(diag(vcov_mat))
+  # lower_95 <- c_beta - 1.96 * std_err
+  # colnames(lower_95) <- "lower_95"
+  # upper_95 <- c_beta + 1.96 * std_err
+  # colnames(upper_95) <- "upper_95"
   
-  coef_result <- cbind(c_beta, std_err, lower_95, upper_95)
+  # coef_result <- cbind(c_beta, std_err, lower_95, upper_95)
+  coef_result <- c_beta
   
   final_result <- list(
     performance = performance_df2,
@@ -192,7 +196,7 @@ multiOmics <- function(
 #' @description
 #' Run `multiOmics` for given sets of parameters `g` and `a`
 #' 
-#' @param gstr_vec a vector of `g` values (if gstr == "scale", then gstr = 1/N^2, where N=nrow(G))
+#' @param gstr_vec a vector of `g` values, two options: "scale" or 1
 #' @param a0_vec a vector of `a` values
 #' @param ... Additional parameters for `multiOmics`
 #' 
@@ -279,7 +283,7 @@ multiOmics_sensitivity <- function(
       res_table <- data.frame(matrix(0, n_fold, length(res_cols))) |> 
         setNames(res_cols)
       
-      message("Starting 2nd stage.")
+      message("\n2nd stage modeling with a0 = ", aa, "and g = ", gg)
       message("Running cross validation...")
       pb <- txtProgressBar(min=0, max=n_fold, initial=0, style=3)
       
@@ -340,15 +344,16 @@ multiOmics_sensitivity <- function(
       # calculate SE?
       # reference https://stats.stackexchange.com/questions/44838/how-are-the-standard-errors-of-coefficients-calculated-in-a-regression/44841#44841
       c_beta <- estbeta[colnames(C)] |> as.matrix() |> t() |> `colnames<-`("beta")
-      sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
-      vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
-      std_err <- sqrt(diag(vcov_mat))
-      lower_95 <- c_beta - 1.96 * std_err
-      colnames(lower_95) <- "lower_95"
-      upper_95 <- c_beta + 1.96 * std_err
-      colnames(upper_95) <- "upper_95"
+      # sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
+      # vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
+      # std_err <- sqrt(diag(vcov_mat))
+      # lower_95 <- c_beta - 1.96 * std_err
+      # colnames(lower_95) <- "lower_95"
+      # upper_95 <- c_beta + 1.96 * std_err
+      # colnames(upper_95) <- "upper_95"
       
-      coef_result <- cbind(c_beta, std_err, lower_95, upper_95)
+      # coef_result <- cbind(c_beta, std_err, lower_95, upper_95)
+      coef_result <- c_beta
       
       final_result <- list(
         performance = performance_df2,
@@ -396,9 +401,13 @@ plot.multiOmics <- function(multiOmics_mod){
     ggplot2::geom_boxplot() +
     ggplot2::facet_wrap(~clinical_x, scales = "free_x", ncol=1) +
     ggplot2::theme(axis.text.y = ggplot2::element_blank(),
-                   axis.ticks.y = ggplot2::element_blank())
+                   axis.ticks.y = ggplot2::element_blank()) +
+    ggplot2::ggtitle(paste0("a0 = ", multiOmics_mod$performance[[1]], ", ",
+                            "g = ", multiOmics_mod$performance[[2]]))
   
 }
+
+
 
 #' print.multiOmics
 #' 
@@ -444,6 +453,39 @@ summary.multiOmics_sensitivity <- function(multiOmics_sensitivity_obj){
   summary_df
 }
 
+#' plot.multiOmics_sensitivity
+#' 
+#' plot function for multiOmics_sensitivity object
+#' 
+#' @param multiOmics_sensitivity_obj multiOmics_sensitivity object
+#' @export
+plot.multiOmics_sensitivity <- function(multiOmics_sensitivity_obj){
+  lapply(multiOmics_sensitivity_obj, function(x) {
+    unwanted_cols <- c("n_selected_vars", "r2_train", "r2_test",
+                       "cindex_train", "cindex_test", "mse_train", "mse_test")
+    
+    res_table <- x$cv_result
+    
+    res_table <- res_table[, setdiff(names(res_table), unwanted_cols)] |> 
+      utils::stack() |> 
+      setNames(c("beta", "clinical_x"))
+    # res_table$a0 <- x$performance[[1]]
+    # res_table$g <- x$performance[[2]]
+    res_table$a_g <- paste0("a=",x$performance[[1]],",",
+                            "g=",x$performance[[2]]) 
+    res_table
+  }) |> 
+    do.call(rbind, args=_) |> 
+    ggplot2::ggplot(ggplot2::aes(y=beta, x=a_g)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_wrap(~clinical_x, scales = "free_y", ncol=1) +
+    ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                   axis.text.x =ggplot2::element_text(angle=15))
+}
+
+
+
+
 # 
 ##### test
 # params
@@ -483,9 +525,25 @@ summary.multiOmics_sensitivity <- function(multiOmics_sensitivity_obj){
 # 
 # plot(multiOmics_obj)
 # print(multiOmics_obj)
+# coef(multiOmics_obj)
+# # 
+# # 
+# # params
+# M <- GBM_data2$M
+# G <- GBM_data2$G
+# fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
+# gene_grouping <- get_grouping(eg_gene_symbols, fp)
+# Y <- GBM_data2$Y
+# C <- GBM_data2$C
+# Delta <- GBM_data2$Delta
+# n_fold <- 10
+# random_seed <- 123
+# EMVS_I <- 3
+# NEG_I <- 3
+# EMVS_thresh <- 0.0001
+# NEG_thresh <- 0.0001
 # 
 # 
-# #
 # a0 <- c(0.1, 1, 10, 50)
 # g <- list("scale", 1)
 # 
@@ -508,24 +566,4 @@ summary.multiOmics_sensitivity <- function(multiOmics_sensitivity_obj){
 # 
 # summary(multiOmics_s_obj)
 # plot(multiOmics_s_obj)
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
 
-# CCt <- C %*% t(C)
-# mat1 <- solve(CCt + diag(x=1, nrow=dim(CCt)[1], ncol=dim(CCt)[2])) |> 
-#   `colnames<-`(NULL) |> 
-#   `rownames<-`(NULL)
-# 
-# sqrt(mat1 |> diag())
-# mat2 <- MASS::ginv(CCt + diag(x=1, nrow=dim(CCt)[1], ncol=dim(CCt)[2]))

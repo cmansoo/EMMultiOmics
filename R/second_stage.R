@@ -8,11 +8,15 @@
 #' @param G gene expression level
 #' @param C clinical features
 #' @param a0 size sparsity
-#' @param gstr prior (if "scale", then gstr = 1/N^2, where N=nrow(G)) 
+#' @param gstr prior, two options: "scale" or "1"
 #' @param Zmatrix Loading matrix
 #' @param I number of maximum iterations
 #' @param thresh convergence criterion
 #' @param .mpmath function depends on mpmath package from python. pointer for mpmath package
+#' 
+#' @details
+#' `gstr` will take two options "scale" or "1." if `gstr` == "scale" then g = 1/N^2 where N = number of genes
+#' 
 #' 
 #' @examples
 #' G <- GBM_data2$G
@@ -45,7 +49,8 @@ NEG_em <- function(Y, G, C, a0, gstr, Zmatrix, I=10, thresh=0.001, .mpmath=setup
   K <- K0 + L
   # I <- 300
   a <- a0
-  g <- if(gstr == "scale") 1/N^2 else as.numeric(gstr)
+  # g <- if(gstr == "scale") 1/N^2 else as.numeric(gstr)
+  g <- if(gstr == "scale") {1/N^2} else 1
   
   alpha <- 1 # these below and alpha should be parameterized or no?
   gam <- 1 #

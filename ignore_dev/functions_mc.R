@@ -909,7 +909,8 @@ for(jjj in 1:n_fold){
 }
 
 # take the average
-performance_df <- data.frame(a=a0, g=ifelse(gstr==1/(N^2),'scale',gstr),
+performance_df <- data.frame(a=a0, #g=ifelse(gstr==1/(N^2),'scale',gstr),
+                             g=gstr,
                              as.list(colMeans(res_table)))
 performance_df2 <- performance_df[, ! colnames(performance_df) %in% colnames(C)] |> 
   t() |> 
@@ -928,8 +929,11 @@ selected_genes <- list(`M Effect` = M_effect, `M + M^c Effect` = M_Mc_effect, `M
 # calculate SE?
 # reference https://stats.stackexchange.com/questions/44838/how-are-the-standard-errors-of-coefficients-calculated-in-a-regression/44841#44841
 c_beta <- estbeta[colnames(C)] |> as.matrix() |> t() |> `colnames<-`("beta")
+c_beta
+
 sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
-vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
+# vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
+vcov_mat <- sigma_sq * solve(t(C) %*% C)
 std_err <- sqrt(diag(vcov_mat))
 lower_95 <- c_beta - 1.96 * std_err
 colnames(lower_95) <- "lower_95"
@@ -949,7 +953,20 @@ print(final_result)
 
 final_result
 
+# use the quantiles of beta instead?
 
+# try whatever sounak suggested
+CCt <- C %*% t(C)
+# (CCt + Iq) inverse
+mat1 <- solve(CCt + diag(x=1, nrow=dim(CCt)[1], ncol=dim(CCt)[2])) |>
+  `colnames<-`(NULL) |>
+  `rownames<-`(NULL)
+
+mat1
+sqrt(mat1 |> diag())
+# mat2 <- MASS::ginv(CCt + diag(x=1, nrow=dim(CCt)[1], ncol=dim(CCt)[2]))
+# mat2
+mat1 %*% t(C)
 
 
 # plot

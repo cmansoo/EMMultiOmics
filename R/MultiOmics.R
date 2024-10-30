@@ -240,6 +240,8 @@ multiOmics <- function(
 #' 
 #' # summary
 #' summary(multiOmics_s_obj)
+#' plot(multiOmics_s_obj)
+#' 
 #' @export
 multiOmics_sensitivity <- function(
     gstr_vec, a0_vec, M, G, grouping, nu0=0.5, nu1=10^3, nu=1, lambda=1, a=1, b=1, EMVS_I=10, EMVS_thresh=0.0001,

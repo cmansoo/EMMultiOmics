@@ -2,7 +2,12 @@ Package: EMMultiOmics
 Title: What the Package Does (One Line, Title Case)
 Version: 1.0
 Authors@R: 
-    person("Mansoo", "Cho", "", "mcho1234@gmail.com", role = c("aut", "cre"))
+    c(
+    person("Hao", "Xue", email= "hx222@cornell.edu", role = c("aut")),
+    person("Mansoo", "Cho", email="mcho1234@gmail.com", role = c("aut", "cre")),
+    person("Sounak", "Chakraborty", email="chakrabortys@missouri.edu", role = c("aut")),
+    person("Tanujit", "Dey", email="tdey@bwh.harvard.edu", role = c("aut"))
+    )
 Description: What the package does (one paragraph).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license

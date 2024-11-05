@@ -5,12 +5,19 @@
 \alias{GBM_data2}
 \title{GBM_data2}
 \format{
-GBM data 2
+An object of class \code{list} of length 5.
 }
 \usage{
 GBM_data2
 }
 \description{
-GBM_data2
+Subset of GBM 2 data
+
+includes the following objects:
+\itemize{
+\item GBM_data2: methylation (M), gene expression (G), clinical features (C), and clinical outcomes (Y)
+\item GENE_GROUP2: gene grouping information
+\item GBM2_EMVS_res: EVMS result
+}
 }
 \keyword{datasets}

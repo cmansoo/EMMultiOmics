@@ -3,7 +3,7 @@
 ## Description
 
 Performs EMVS algorithm for genomics data.
-The default values for `nu0`, `nu1`, `lambda`, `a`, `b` were chosen per publication: *Veronika Ročková & Edward I. George (2013): EMVS: The EM Approach to Bayesian Variable Selection, Journal of the American Statistical Association*
+The default values for `nu0`, `nu1`, `lambda`, `a`, `b` were chosen per publication: *Veronika Ro<U+010D>kov<U+00E1> & Edward I. George (2013): EMVS: The EM Approach to Bayesian Variable Selection, Journal of the American Statistical Association*
 
 ## Usage
 

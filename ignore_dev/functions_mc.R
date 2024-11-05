@@ -190,7 +190,7 @@ reticulate::virtualenv_list()
 reticulate::virtualenv_remove(envname = "emmultiomics" 
                               # packages = NULL, 
                               # confirm = interactive()
-                              )
+)
 #### functionalize lpcf.py in r
 # set up mpmath for user
 setup_mpmath <- function(){
@@ -259,10 +259,10 @@ for(kkk in 2:I){
   #M-step
   #update Beta through Adaptive LASSO, Zou (2006) (using "lqa" package)
   Bayelsso_gen = glmnet::glmnet(x=as.matrix(G),
-                        y=Y-as.vector(as.matrix(C)%*%betak[kkk-1,(K0+1):K]),
-                        intercept=FALSE, standardize=F, alpha=1,
-                        family="gaussian", lambda=2*sqrt(2)/sqrt(g)*sigmak[kkk-1]*(sum(Elambdaj[1:K0])/N)/(2*N),
-                        penalty.factor =as.vector(Elambdaj[1:K0]))
+                                y=Y-as.vector(as.matrix(C)%*%betak[kkk-1,(K0+1):K]),
+                                intercept=FALSE, standardize=F, alpha=1,
+                                family="gaussian", lambda=2*sqrt(2)/sqrt(g)*sigmak[kkk-1]*(sum(Elambdaj[1:K0])/N)/(2*N),
+                                penalty.factor =as.vector(Elambdaj[1:K0]))
   betak[kkk,1:K0]=coef(Bayelsso_gen)[-1]
   # Bayelsso_gen=lqa.default(x=as.matrix(G),
   #                          y=Y-as.vector(as.matrix(C)%*%betak[kkk-1,(K0+1):K]),
@@ -272,9 +272,9 @@ for(kkk in 2:I){
   #                                                 al.weights=as.vector(Elambdaj[1:K0])))
   # betak[kkk,1:K0]=Bayelsso_gen$coefficients
   Bayelsso_clinical = glmnet::glmnet(x=as.matrix(C),
-                             y=Y-as.vector(as.matrix(G)%*%betak[kkk,1:K0]),
-                             intercept=FALSE, standardize=F, alpha=0,
-                             family="gaussian", lambda=1/N)
+                                     y=Y-as.vector(as.matrix(G)%*%betak[kkk,1:K0]),
+                                     intercept=FALSE, standardize=F, alpha=0,
+                                     family="gaussian", lambda=1/N)
   betak[kkk,(K0+1):K]=coef(Bayelsso_clinical)[-1]
   
   plot(betak[kkk,],main=kkk)
@@ -447,12 +447,12 @@ random_seed <- 123
 
 # first part
 result1 <- second_stage_helper(Y, G, C, Delta, R2, a0, gstr, n_fold, random_seed,
-                    I=10, thresh=0.001)
+                               I=10, thresh=0.001)
 
 # multiple a0
 a0 <- c(0.1, 1, 10, 50)
 result2 <- lapply(a0, function(a) second_stage_helper(Y, G, C, Delta, R2, a0=a, gstr, n_fold, random_seed, 
-                                           I=10, thresh=0.001)) |> 
+                                                      I=10, thresh=0.001)) |> 
   setNames(a0)
 
 
@@ -691,7 +691,7 @@ NEG_list1 <- cv_helper(Y, G, C, Delta, R2, a0, gstr, n_fold, random_seed,
 # multiple a0
 a0 <- c(0.1, 1, 10, 50)
 NEG_list2 <- lapply(a0, function(a) cv_helper(Y, G, C, Delta, R2, a0=a, gstr, n_fold, random_seed, 
-                                 I=10, thresh=0.001)) |> 
+                                              I=10, thresh=0.001)) |> 
   setNames(a0)
 
 #### now go back to developing cv helper?
@@ -780,7 +780,7 @@ n_fold <- 10
 random_seed <- 123
 
 final_list1 <- cv_helper(Y, G, C, Delta, R2, a0, gstr, n_fold, random_seed,
-                       I=10, thresh=0.001)
+                         I=10, thresh=0.001)
 
 # multiple a0 and gstr
 a0 <- c(0.1, 1, 10, 50)
@@ -824,12 +824,14 @@ gene_grouping <- get_grouping(eg_gene_symbols, fp)
 # I and thresh, make separate input for EMVS? like EMVS.I, EMVS.thresh
 
 # params for second stage
-G
 
 
 
 # within MultiOmics, run EMVS
-EMVS_result <- EMVS(M,G, grouping=gene_grouping, I=3, thresh=0.001)
+# EMVS_result <- EMVS(M,G, grouping=gene_grouping, I=3, thresh=0.001)
+# EMVS_result <- EMVS(M,G, grouping=gene_grouping, I=20, thresh=0.001)
+# or test with Hao's EMVS result?
+EMVS_result <- EMMultiOmics::GBM2_EMVS_res
 
 ### 2nd stage
 # params
@@ -858,7 +860,8 @@ Zmatrix <- Zmat_builder(R2, G)
 # E-M loop step
 # run cross validation
 set.seed(random_seed)
-folds <- caret::createFolds(1:N, k=n_fold)
+# folds <- caret::createFolds(1:N, k=n_fold)
+folds <- .folds(1:N, num_fold=n_fold)
 # NEG result list
 # NEG_list <- list() 
 
@@ -870,6 +873,9 @@ res_cols <- c("n_selected_vars", "r2_train", "r2_test",
 
 res_table <- data.frame(matrix(0, n_fold, length(res_cols))) |> 
   setNames(res_cols)
+
+G_coeffs <- data.frame(matrix(0, n_fold, ncol(G))) |> 
+  setNames(colnames(G))
 
 # loop
 for(jjj in 1:n_fold){
@@ -883,7 +889,8 @@ for(jjj in 1:n_fold){
                        a0=a0,
                        gstr=gstr,
                        Zmatrix=Zmatrix,
-                       I=3, # make it part of ...? # or separate parameter, NEG.I
+                       # I=3, # make it part of ...? # or separate parameter, NEG.I
+                       I = 50,
                        thresh=0.001, # make it part of ...? # or separate parameter, NEG.thresh
                        # ...,
                        .mpmath=.mpmath)
@@ -904,8 +911,8 @@ for(jjj in 1:n_fold){
   res_table[jjj, "cindex_test"] <- .cindx(pred_test, Y[test_indx])
   res_table[jjj, "mse_train"] <- mean((pred_train - Y[-test_indx])^2)
   res_table[jjj, "mse_test"] <- mean((pred_test - Y[test_indx])^2)
-  res_table[jjj, colnames(C)] <- estbeta[colnames(C)]
-  
+  res_table[jjj, colnames(C)] <- estbeta[1, colnames(C)]
+  G_coeffs[jjj, colnames(G)] <- estbeta[1, colnames(G)]
 }
 
 # take the average
@@ -928,19 +935,48 @@ selected_genes <- list(`M Effect` = M_effect, `M + M^c Effect` = M_Mc_effect, `M
 
 # calculate SE?
 # reference https://stats.stackexchange.com/questions/44838/how-are-the-standard-errors-of-coefficients-calculated-in-a-regression/44841#44841
-c_beta <- estbeta[colnames(C)] |> as.matrix() |> t() |> `colnames<-`("beta")
-c_beta
+# c_beta <- estbeta[colnames(C)] |> as.matrix() |> t() |> `colnames<-`("beta")
+c_beta <- res_table[colnames(C)] |>
+  colMeans() |> 
+  as.matrix() |>
+  `colnames<-`("beta")
 
-sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
-# vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
-vcov_mat <- sigma_sq * solve(t(C) %*% C)
+# g_beta <- G_coeffs |>
+#   colMeans() |>
+#   as.matrix()
+
+g_beta <- G_coeffs[selected_biomarkers] |>
+  colMeans() |>
+  as.matrix()
+
+
+# sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
+# # vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
+# vcov_mat <- sigma_sq * solve(t(C) %*% C)
+# std_err <- sqrt(diag(vcov_mat))
+# lower_95 <- c_beta - 1.96 * std_err
+# colnames(lower_95) <- "lower_95"
+# upper_95 <- c_beta + 1.96 * std_err
+# colnames(upper_95) <- "upper_95"
+
+
+# try whatever sounak suggested
+CtC <- t(C) %*% C
+vcov_mat <- solve(CtC + diag(x=1, nrow=dim(CtC)[1], ncol=dim(CtC)[2]))
 std_err <- sqrt(diag(vcov_mat))
-lower_95 <- c_beta - 1.96 * std_err
-colnames(lower_95) <- "lower_95"
-upper_95 <- c_beta + 1.96 * std_err
-colnames(upper_95) <- "upper_95"
+Y_hat <- Y - (G[, selected_biomarkers] %*% g_beta)
+mu_beta_c <- vcov_mat %*% (t(C) %*% Y_hat) |> 
+  `colnames<-`("mu_beta")
 
-coef_result <- cbind(c_beta, std_err, lower_95, upper_95)
+# sample from beta_c ~ MVN(mu_beta_c, vcov)
+betas <- MASS::mvrnorm(n = 1e5, mu_beta_c, vcov_mat)
+intv <- HDInterval::hdi(betas)
+hpd_lower_95 <- intv[1,]
+hpd_upper_95 <- intv[2,]
+
+coef_result <- cbind(c_beta, std_err, hpd_lower_95, hpd_upper_95)
+coef_result <- cbind(c_beta, mu_beta_c, std_err, hpd_lower_95, hpd_upper_95)
+coef_result
 
 final_result <- list(
   performance = performance_df2,
@@ -955,18 +991,6 @@ final_result
 
 # use the quantiles of beta instead?
 
-# try whatever sounak suggested
-CCt <- C %*% t(C)
-# (CCt + Iq) inverse
-mat1 <- solve(CCt + diag(x=1, nrow=dim(CCt)[1], ncol=dim(CCt)[2])) |>
-  `colnames<-`(NULL) |>
-  `rownames<-`(NULL)
-
-mat1
-sqrt(mat1 |> diag())
-# mat2 <- MASS::ginv(CCt + diag(x=1, nrow=dim(CCt)[1], ncol=dim(CCt)[2]))
-# mat2
-mat1 %*% t(C)
 
 
 # plot
@@ -1090,7 +1114,7 @@ multiOmics(
   NEG_I=NEG_I,
   EMVS_thresh = EMVS_thresh,
   NEG_thresh = NEG_thresh
-  )
+)
 
 
 
@@ -1098,3 +1122,21 @@ multiOmics(
 
 
 
+#### dev folding function
+N <- EMMultiOmics::GBM_data2$G |> nrow()
+n_fold <- 10
+
+folds <- caret::createFolds(1:N, k=n_fold)
+str(folds)
+
+#### dev same
+fold_names <- paste0("fold", 1:n_fold)
+
+my_seq <- 1:N
+shuffled_seq <- sample(my_seq, replace=FALSE)
+shuffled_seq
+# split into folds
+groups <- cut(my_seq, breaks=n_fold)
+groups
+split(shuffled_seq, f = groups) |> 
+  setNames(fold_names)

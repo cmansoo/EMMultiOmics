@@ -25,7 +25,7 @@ NEG_em(
 
 \item{a0}{size sparsity}
 
-\item{gstr}{prior (if "scale", then gstr = 1/N^2, where N=nrow(G))}
+\item{gstr}{prior, two options: "scale" or "1"}
 
 \item{Zmatrix}{Loading matrix}
 
@@ -37,6 +37,9 @@ NEG_em(
 }
 \description{
 A short description...
+}
+\details{
+\code{gstr} will take two options "scale" or "1." if \code{gstr} == "scale" then g = 1/N^2 where N = number of genes
 }
 \examples{
 G <- GBM_data2$G

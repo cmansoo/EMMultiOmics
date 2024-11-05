@@ -2,7 +2,7 @@
 
 ## Description
 
-Example Gene Names
+use with `get_grouping`
 
 ## Usage
 
@@ -12,7 +12,7 @@ eg_gene_symbols
 
 ## Format
 
-Example Gene ID's from Official Symbols
+An object of class `character` of length 1000.
 
 ## Keyword
 

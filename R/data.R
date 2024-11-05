@@ -1,27 +1,35 @@
 #' GBM_data2
-#' @format GBM data 2
+#' @description
+#' 
+#' Subset of GBM 2 data
+#' 
+#' includes the following objects:
+#' 
+#' - GBM_data2: methylation (M), gene expression (G), clinical features (C), and clinical outcomes (Y)
+#' - GENE_GROUP2: gene grouping information
+#' - GBM2_EMVS_res: EVMS result
 "GBM_data2"
 
-#' GENE_GROUP2
-#' @format Gene grouping for GBM data 2
-"GENE_GROUP2"
-
-#' GBM2_EMVS_res
-#' @format GBM 2 data EMVS result. 
-"GBM2_EMVS_res"
-
 #' GBM_data2_full
-#' @format Full data for GBM 2
+#' @description
+#' 
+#' Full GBM 2 data
+#' 
+#' - GBM_data2_full
+#' - GENE_GROUP2_FULL
+#' - GBM2_full_EMVS_res
 "GBM_data2_full"
 
-#' GENE_GROUP2_FULL
-#' @format Gene grouping for GBM full data 2
-"GENE_GROUP2_FULL"
-
-#' GBM2_full_EMVS_res 
-#' @format GBM 2 full data EMVS result
-"GBM2_full_EMVS_res"
-
 #' Example Gene Names
-#' @format Example Gene ID's from Official Symbols
+#' 
+#' use with `get_grouping`
 "eg_gene_symbols"
+
+#' Example multiOmics result
+#' @description
+#' 
+#' Example `multiOmics` and `multiOmics_sensitivity` from vignette("EMMultiOmics")
+#' 
+#' - eg_multiOmics
+#' - eg_multiOmics_sensitivity
+"eg_multiOmics"

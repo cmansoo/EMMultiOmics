@@ -102,5 +102,108 @@ NEG_em(Y, G, C, a0, gstr, Zmatrix,
 
 ## 7. summary
 
-(walkthrough on how to use `multiomics` and `multiomics.sensitivity` to create summary output/tables/plots...)
+`multiOmics` function puts together the first and second stage models and performs the entire algorithm. The output summarizes 1) selected genes from the first stages modeling, 2) coefficients of the clinical features along with their highest posterior density intervals; 3) model performance based on k-fold cross validation. `multiOmics_sensitivity` function performs the same tasks over a range of `a` and `g` values. 
+
+Example with `multiOmics`
+```{r eval=FALSE}
+M <- GBM_data2$M
+G <- GBM_data2$G
+fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
+gene_grouping <- get_grouping(eg_gene_symbols, fp)
+Y <- GBM_data2$Y
+C <- GBM_data2$C
+a0 <- 0.1
+gstr <- "scale"
+Delta <- GBM_data2$Delta
+n_fold <- 10
+random_seed <- 123
+EMVS_I <- 10
+NEG_I <- 10
+EMVS_thresh <- 0.0001
+NEG_thresh <- 0.0001
+
+# run
+multiOmics_obj <- multiOmics(
+  M=M,
+  G=G,
+  grouping=gene_grouping,
+  Y=Y,
+  C=C,
+  a0=a0,
+  gstr=gstr,
+  Delta=Delta,
+  n_fold=n_fold,
+  random_seed = random_seed,
+  EMVS_I = EMVS_I,
+  NEG_I=NEG_I,
+  EMVS_thresh = EMVS_thresh,
+  NEG_thresh = NEG_thresh
+)
+```
+
+```{r echo=FALSE}
+# pre-run results
+# eg_multiOmics <- multiOmics_obj
+multiOmics_obj <- EMMultiOmics::eg_multiOmics
+```
+
+```{r fig.width=8, fig.height=8}
+# summaries
+print(multiOmics_obj)
+plot(multiOmics_obj)
+```
+
+Example on `multiOmics_sensitivity`
+```{r eval=FALSE}
+# params
+M <- GBM_data2$M
+G <- GBM_data2$G
+fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
+gene_grouping <- get_grouping(eg_gene_symbols, fp)
+Y <- GBM_data2$Y
+C <- GBM_data2$C
+Delta <- GBM_data2$Delta
+n_fold <- 10
+random_seed <- 123
+EMVS_I <- 10
+NEG_I <- 10
+EMVS_thresh <- 0.0001
+NEG_thresh <- 0.0001
+
+a0 <- c(0.1, 1, 10, 50)
+g <- list("scale", 1)
+
+
+# run
+multiOmics_s_obj <- multiOmics_sensitivity(
+  M=M,
+  G=G,
+  grouping=gene_grouping,
+  Y=Y,
+  C=C,
+  a0_vec=a0,
+  gstr_vec=g,
+  Delta=Delta,
+  n_fold=n_fold,
+  random_seed = random_seed,
+  EMVS_I = EMVS_I,
+  NEG_I=NEG_I,
+  EMVS_thresh = EMVS_thresh,
+  NEG_thresh = NEG_thresh
+)
+```
+
+```{r echo=FALSE}
+# pre-run results
+# eg_multiOmics_sensitivity <- multiOmics_s_obj
+multiOmics_s_obj <- EMMultiOmics::eg_multiOmics_sensitivity
+```
+
+```{r fig.width=8, fig.height=8}
+# summary
+summary(multiOmics_s_obj)
+plot(multiOmics_s_obj)
+```
+
+(walkthrough on how to use `multiOmics` and `multiOmics_sensitivity` to create summary output/tables/plots...)
 

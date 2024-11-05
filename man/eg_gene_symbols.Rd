@@ -5,12 +5,12 @@
 \alias{eg_gene_symbols}
 \title{Example Gene Names}
 \format{
-Example Gene ID's from Official Symbols
+An object of class \code{character} of length 1000.
 }
 \usage{
 eg_gene_symbols
 }
 \description{
-Example Gene Names
+use with \code{get_grouping}
 }
 \keyword{datasets}

@@ -54,7 +54,7 @@ multiOmics(
 
 \item{a0}{size sparsity}
 
-\item{gstr}{prior (if "scale", then gstr = 1/N^2, where N=nrow(G))}
+\item{gstr}{prior, two options: "scale" or "1"}
 
 \item{n_fold}{number of folds in K-fold cross validation}
 
@@ -70,6 +70,9 @@ multiOmics(
 }
 \description{
 Run first and second stage models
+}
+\details{
+\code{gstr} will take two options "scale" or "1." if \code{gstr} == "scale" then g = 1/N^2 where N = number of genes
 }
 \examples{
 # params
@@ -93,7 +96,7 @@ NEG_thresh <- 0.0001
 multiOmics_obj <- multiOmics(
   M=M,
   G=G,
-  grouping=grouping,
+  grouping=gene_grouping,
   Y=Y,
   C=C,
   a0=a0,

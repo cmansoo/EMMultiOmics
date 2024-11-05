@@ -25,12 +25,16 @@ NEG_em(
 * `Y`: clinical outcome
 * `G`: gene expression level
 * `C`: clinical features
-* `a0`: details...
-* `gstr`: details... (if "scale", then gstr = 1/N^2, where N=nrow(G))
-* `Zmatrix`: details...
+* `a0`: size sparsity
+* `gstr`: prior, two options: "scale" or "1"
+* `Zmatrix`: Loading matrix
 * `I`: number of maximum iterations
 * `thresh`: convergence criterion
 * `.mpmath`: function depends on mpmath package from python. pointer for mpmath package
+
+## Details
+
+`gstr` will take two options "scale" or "1." if `gstr` == "scale" then g = 1/N^2 where N = number of genes
 
 ## Examples
 

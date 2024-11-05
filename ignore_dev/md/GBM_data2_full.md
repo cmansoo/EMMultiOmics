@@ -2,7 +2,11 @@
 
 ## Description
 
-GBM_data2_full
+Full GBM 2 data
+
+* GBM_data2_full
+* GENE_GROUP2_FULL
+* GBM2_full_EMVS_res
 
 ## Usage
 
@@ -12,7 +16,7 @@ GBM_data2_full
 
 ## Format
 
-Full data for GBM 2
+An object of class `list` of length 5.
 
 ## Keyword
 

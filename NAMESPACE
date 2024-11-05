@@ -2,6 +2,7 @@
 
 S3method(coef,multiOmics)
 S3method(plot,multiOmics)
+S3method(plot,multiOmics_sensitivity)
 S3method(print,multiOmics)
 S3method(summary,multiOmics_sensitivity)
 export(EMVS)

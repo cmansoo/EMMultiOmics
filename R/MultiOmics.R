@@ -48,7 +48,7 @@
 #' multiOmics_obj <- multiOmics(
 #'   M=M,
 #'   G=G,
-#'   grouping=grouping,
+#'   grouping=gene_grouping,
 #'   Y=Y,
 #'   C=C,
 #'   a0=a0,
@@ -69,7 +69,7 @@
 multiOmics <- function(
     M, G, grouping, nu0=0.5, nu1=10^3, nu=1, lambda=1, a=1, b=1, EMVS_I=10, EMVS_thresh=0.0001,
     Y, C, Delta, a0, gstr, n_fold=10, random_seed=NULL, NEG_I=10, NEG_thresh=0.0001
-  ){
+){
   
   # within MultiOmics, run EMVS
   EMVS_result <- EMVS(M,G, grouping=gene_grouping, I=EMVS_I, thresh=EMVS_thresh)
@@ -88,7 +88,8 @@ multiOmics <- function(
   # E-M loop step
   # run cross validation
   if(is.null(random_seed)) set.seed(random_seed)
-  folds <- caret::createFolds(1:N, k=n_fold)
+  # folds <- caret::createFolds(1:N, k=n_fold)
+  folds <- .folds(1:N, num_fold=n_fold)
   
   # initialize result objects
   selected_biomarkers <- c()
@@ -98,6 +99,9 @@ multiOmics <- function(
   
   res_table <- data.frame(matrix(0, n_fold, length(res_cols))) |> 
     setNames(res_cols)
+  
+  G_coeffs <- data.frame(matrix(0, n_fold, ncol(G))) |> 
+    setNames(colnames(G))
   
   message("\n2nd stage modeling with a0 = ", a0, "and g = ", gstr)
   message("Running cross validation...")
@@ -136,6 +140,8 @@ multiOmics <- function(
     res_table[jjj, "mse_train"] <- mean((pred_train - Y[-test_indx])^2)
     res_table[jjj, "mse_test"] <- mean((pred_test - Y[test_indx])^2)
     res_table[jjj, colnames(C)] <- estbeta[colnames(C)]
+    G_coeffs[jjj, colnames(G)] <- estbeta[1, colnames(G)]
+    
     setTxtProgressBar(pb, jjj)
   }
   
@@ -157,20 +163,32 @@ multiOmics <- function(
   Mc_effect <- selected_Z[selected_Z$non_M == 1, "gene_names"]
   selected_genes <- list(`M Effect` = M_effect, `M + M^c Effect` = M_Mc_effect, `M^c Effect` = Mc_effect)
   
-  # calculate SE?
-  # reference https://stats.stackexchange.com/questions/44838/how-are-the-standard-errors-of-coefficients-calculated-in-a-regression/44841#44841
-  c_beta <- estbeta[colnames(C)] |> as.matrix() |> t() |> `colnames<-`("beta")
-  # sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
-  # vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
-  # std_err <- sqrt(diag(vcov_mat))
-  # lower_95 <- c_beta - 1.96 * std_err
-  # colnames(lower_95) <- "lower_95"
-  # upper_95 <- c_beta + 1.96 * std_err
-  # colnames(upper_95) <- "upper_95"
+  # calculate HPD interval
+  c_beta <- res_table[colnames(C)] |>
+    colMeans() |> 
+    as.matrix() |>
+    `colnames<-`("beta")
   
-  # coef_result <- cbind(c_beta, std_err, lower_95, upper_95)
-  coef_result <- c_beta
+  g_beta <- G_coeffs[selected_biomarkers] |>
+    colMeans() |>
+    as.matrix()
   
+  CtC <- t(C) %*% C
+  vcov_mat <- solve(CtC + diag(x=1, nrow=dim(CtC)[1], ncol=dim(CtC)[2]))
+  std_err <- sqrt(diag(vcov_mat))
+  Y_hat <- Y - (G[, selected_biomarkers] %*% g_beta)
+  mu_beta_c <- vcov_mat %*% (t(C) %*% Y_hat) |> 
+    `colnames<-`("mu_beta")
+  # sample from beta_c ~ MVN(mu_beta_c, vcov)
+  betas <- MASS::mvrnorm(n = 1e5, mu_beta_c, vcov_mat)
+  intv <- HDInterval::hdi(betas)
+  hpd_lower_95 <- intv[1,]
+  hpd_upper_95 <- intv[2,]
+  
+  # coef_result <- cbind(c_beta, std_err, hpd_lower_95, hpd_upper_95)
+  coef_result <- cbind(c_beta, mu_beta_c, std_err, hpd_lower_95, hpd_upper_95)
+  
+  # save result
   final_result <- list(
     performance = performance_df2,
     coeffs = coef_result,
@@ -224,7 +242,7 @@ multiOmics <- function(
 #' multiOmics_s_obj <- multiOmics_sensitivity(
 #'   M=M,
 #'   G=G,
-#'   grouping=grouping,
+#'   grouping=gene_grouping,
 #'   Y=Y,
 #'   C=C,
 #'   a0_vec=a0,
@@ -240,6 +258,8 @@ multiOmics <- function(
 #' 
 #' # summary
 #' summary(multiOmics_s_obj)
+#' plot(multiOmics_s_obj)
+#' 
 #' @export
 multiOmics_sensitivity <- function(
     gstr_vec, a0_vec, M, G, grouping, nu0=0.5, nu1=10^3, nu=1, lambda=1, a=1, b=1, EMVS_I=10, EMVS_thresh=0.0001,
@@ -272,7 +292,8 @@ multiOmics_sensitivity <- function(
     function(aa, gg){
       # run cross validation
       if(is.null(random_seed)) set.seed(random_seed)
-      folds <- caret::createFolds(1:N, k=n_fold)
+      # folds <- caret::createFolds(1:N, k=n_fold)
+      folds <- .folds(1:N, num_fold=n_fold)
       
       # initialize result objects
       selected_biomarkers <- c()
@@ -282,6 +303,9 @@ multiOmics_sensitivity <- function(
       
       res_table <- data.frame(matrix(0, n_fold, length(res_cols))) |> 
         setNames(res_cols)
+      
+      G_coeffs <- data.frame(matrix(0, n_fold, ncol(G))) |> 
+        setNames(colnames(G))
       
       message("\n2nd stage modeling with a0 = ", aa, "and g = ", gg)
       message("Running cross validation...")
@@ -341,20 +365,32 @@ multiOmics_sensitivity <- function(
       Mc_effect <- selected_Z[selected_Z$non_M == 1, "gene_names"]
       selected_genes <- list(`M Effect` = M_effect, `M + M^c Effect` = M_Mc_effect, `M^c Effect` = Mc_effect)
       
-      # calculate SE?
-      # reference https://stats.stackexchange.com/questions/44838/how-are-the-standard-errors-of-coefficients-calculated-in-a-regression/44841#44841
-      c_beta <- estbeta[colnames(C)] |> as.matrix() |> t() |> `colnames<-`("beta")
-      # sigma_sq <- sum((Y - C %*% c_beta)^2) / (nrow(C) - ncol(C))
-      # vcov_mat <- sigma_sq * chol2inv(chol(t(C) %*% C)) 
-      # std_err <- sqrt(diag(vcov_mat))
-      # lower_95 <- c_beta - 1.96 * std_err
-      # colnames(lower_95) <- "lower_95"
-      # upper_95 <- c_beta + 1.96 * std_err
-      # colnames(upper_95) <- "upper_95"
+      # calculate HPD interval
+      c_beta <- res_table[colnames(C)] |>
+        colMeans() |> 
+        as.matrix() |>
+        `colnames<-`("beta")
       
-      # coef_result <- cbind(c_beta, std_err, lower_95, upper_95)
-      coef_result <- c_beta
+      g_beta <- G_coeffs[selected_biomarkers] |>
+        colMeans() |>
+        as.matrix()
       
+      CtC <- t(C) %*% C
+      vcov_mat <- solve(CtC + diag(x=1, nrow=dim(CtC)[1], ncol=dim(CtC)[2]))
+      std_err <- sqrt(diag(vcov_mat))
+      Y_hat <- Y - (G[, selected_biomarkers] %*% g_beta)
+      mu_beta_c <- vcov_mat %*% (t(C) %*% Y_hat) |> 
+        `colnames<-`("mu_beta")
+      # sample from beta_c ~ MVN(mu_beta_c, vcov)
+      betas <- MASS::mvrnorm(n = 1e5, mu_beta_c, vcov_mat)
+      intv <- HDInterval::hdi(betas)
+      hpd_lower_95 <- intv[1,]
+      hpd_upper_95 <- intv[2,]
+      
+      coef_result <- cbind(c_beta, std_err, hpd_lower_95, hpd_upper_95)
+      coef_result <- cbind(c_beta, mu_beta_c, std_err, hpd_lower_95, hpd_upper_95)
+      
+      # save result
       final_result <- list(
         performance = performance_df2,
         coeffs = coef_result,
@@ -488,7 +524,7 @@ plot.multiOmics_sensitivity <- function(multiOmics_sensitivity_obj){
 
 # 
 ##### test
-# params
+# # params
 # M <- GBM_data2$M
 # G <- GBM_data2$G
 # fp <- system.file("eg_fx_classification.txt", package="EMMultiOmics")
@@ -526,8 +562,8 @@ plot.multiOmics_sensitivity <- function(multiOmics_sensitivity_obj){
 # plot(multiOmics_obj)
 # print(multiOmics_obj)
 # coef(multiOmics_obj)
-# # 
-# # 
+# 
+# 
 # # params
 # M <- GBM_data2$M
 # G <- GBM_data2$G
@@ -566,4 +602,4 @@ plot.multiOmics_sensitivity <- function(multiOmics_sensitivity_obj){
 # 
 # summary(multiOmics_s_obj)
 # plot(multiOmics_s_obj)
-
+# 

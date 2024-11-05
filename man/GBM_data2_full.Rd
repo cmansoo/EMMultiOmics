@@ -5,12 +5,17 @@
 \alias{GBM_data2_full}
 \title{GBM_data2_full}
 \format{
-Full data for GBM 2
+An object of class \code{list} of length 5.
 }
 \usage{
 GBM_data2_full
 }
 \description{
-GBM_data2_full
+Full GBM 2 data
+\itemize{
+\item GBM_data2_full
+\item GENE_GROUP2_FULL
+\item GBM2_full_EMVS_res
+}
 }
 \keyword{datasets}

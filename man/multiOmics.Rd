@@ -96,7 +96,7 @@ NEG_thresh <- 0.0001
 multiOmics_obj <- multiOmics(
   M=M,
   G=G,
-  grouping=grouping,
+  grouping=gene_grouping,
   Y=Y,
   C=C,
   a0=a0,

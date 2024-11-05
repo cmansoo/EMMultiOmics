@@ -253,3 +253,16 @@ Zmat_builder <- function(R2, G){
   return(phi_pred/phi)
 }
 
+#' create folds
+#' @param x a vector of integers to split
+#' @param num_fold number of folds. integer k
+.folds <- function(x, num_fold){
+  shuffled_x <- sample(x, replace=FALSE)
+  break_pts <- cut(x, breaks=num_fold)
+  # fold_names <- paste0("fold", 1:num_fold)
+  # return
+  split(shuffled_x, f=break_pts) #|> 
+    # setNames(fold_names)
+}
+
+

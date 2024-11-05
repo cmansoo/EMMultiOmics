@@ -3,3 +3,6 @@
 *.RData
 .Ruserdata
 *.pdf
+# questions.txt
+# ignore_dev/
+inst/doc

@@ -61,7 +61,7 @@ g <- list("scale", 1)
 multiOmics_s_obj <- multiOmics_sensitivity(
   M=M,
   G=G,
-  grouping=grouping,
+  grouping=gene_grouping,
   Y=Y,
   C=C,
   a0_vec=a0,
@@ -77,4 +77,6 @@ multiOmics_s_obj <- multiOmics_sensitivity(
 
 # summary
 summary(multiOmics_s_obj)
+plot(multiOmics_s_obj)
+
 }
